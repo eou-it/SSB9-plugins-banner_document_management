@@ -51,21 +51,21 @@ grails.project.dependency.resolution = {
 
         runtime 'org.springframework:spring-test:3.1.0.RELEASE'
 
-        runtime 'bdm-client:bdm-client:1.7'
-
-        runtime 'WxCrypto5:WxCrypto5:1.0'
-
-        runtime 'json-simple:json-simple:1.1'
-
-        runtime 'json-20090211:json-20090211:1.0'
-
-        runtime 'axservices:axservices:1.0'
-
-        runtime 'ISNetworksProvider:ISNetworksProvider:1.0'
-
-        runtime 'jdom:jdom:1.0'
-
-        runtime 'log4j:log4j:1.0'
+//        runtime 'bdm-client:bdm-client:1.7'
+//
+//        runtime 'WxCrypto5:WxCrypto5:1.0'
+//
+//        runtime 'json-simple:json-simple:1.1'
+//
+//        runtime 'json-20090211:json-20090211:1.0'
+//
+//        runtime 'axservices:axservices:1.0'
+//
+//        runtime 'ISNetworksProvider:ISNetworksProvider:1.0'
+//
+//        runtime 'jdom:jdom:1.0'
+//
+//        runtime 'log4j:log4j:1.0'
 
     }
 }
