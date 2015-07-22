@@ -3,10 +3,14 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import org.json.JSONObject
+
+import javax.xml.ws.WebServiceException
 
 class BdmAttachmentService extends ServiceBase {
 
@@ -31,11 +35,15 @@ class BdmAttachmentService extends ServiceBase {
 
 
     def viewDocument(JSONObject bdmParams, JSONObject queryCriteria, String vpdiCode ) throws BdmsException{
+        try {
+            def bdm = new BDMManager();
 
-        def bdm = new BDMManager();
-
-        bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
-
+            bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
+        }catch(WebServiceException e)
+            {
+                log.error('BdmAttachmentService',e)
+                throw new BdmsException( 'BdmAttachmentService', e )
+            }
     }
 
     def deleteDocument(JSONObject bdmParams, List docIds, String vpdiCode ) throws BdmsException{
