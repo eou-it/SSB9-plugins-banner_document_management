@@ -17,7 +17,7 @@ class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
 
-    def createBDMLocation(file)
+    def Map createBDMLocation(file)
     {
         def map = [:]
         File fileDest
@@ -48,10 +48,12 @@ class BdmAttachmentService extends ServiceBase {
      * @param comment
      * @return
      */
-    def createDocument(JSONObject bdmParams, String filename, JSONObject docAttributes, String vpdiCode ) throws BdmsException{
+    def createDocument(Map bdmParams, String filename, Map attribs , String vpdiCode ) throws BdmsException{
 
         try {
             def bdm = new BDMManager();
+
+            JSONObject docAttributes = new JSONObject(attribs)
 
             bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
         }    catch (BdmsException bdme) {
@@ -66,10 +68,11 @@ class BdmAttachmentService extends ServiceBase {
 
 
 
-    def viewDocument(JSONObject bdmParams, JSONObject queryCriteria, String vpdiCode ) throws BdmsException{
+    def viewDocument(Map params, Map criteria, String vpdiCode ) throws BdmsException{
         try {
             def bdm = new BDMManager();
-
+            JSONObject bdmParams = new JSONObject(params)
+            JSONObject queryCriteria = new JSONObject(criteria)
             bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
         } catch (BdmsException bdme) {
                 if(bdme.getCause()?.toString()?.contains("Invalid index value"))
@@ -85,10 +88,12 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def deleteDocument(JSONObject bdmParams, List docIds, String vpdiCode ) throws BdmsException{
+    def deleteDocument(Map params, List docIds, String vpdiCode ) throws BdmsException{
 
         def bdm = new BDMManager();
         try {
+            JSONObject bdmParams = new JSONObject(params)
+
             bdm.deleteDocument(bdmParams, docIds, vpdiCode);
         } catch (BdmsException bdme) {
             if(bdme.getCause()?.toString()?.contains("Invalid index value"))
@@ -99,12 +104,13 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def listDocuments(JSONObject bdmParams, JSONObject queryCriteria, String vpdiCode ) throws BdmsException{
+    def listDocuments(Map params, Map criteria, String vpdiCode ) throws BdmsException{
 
         def bdm = new BDMManager();
+        JSONObject bdmParams = new JSONObject(params)
+        JSONObject queryCriteria = new JSONObject(criteria)
 
         bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
-
     }
 
 }
