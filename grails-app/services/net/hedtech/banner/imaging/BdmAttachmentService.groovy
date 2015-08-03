@@ -48,11 +48,13 @@ class BdmAttachmentService extends ServiceBase {
      * @param comment
      * @return
      */
-    def createDocument(Map bdmParams, String filename, Map attribs , String vpdiCode ) throws BdmsException{
+    def createDocument(Map params, String filename, Map attribs , String vpdiCode ) throws BdmsException{
 
         try {
             def bdm = new BDMManager();
             JSONObject docAttributes = new JSONObject(attribs)
+            JSONObject bdmParams = new JSONObject(params)
+
             bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
         }catch (BdmsException bdme) {
             if(bdme?.cause?.toString()?.contains("Invalid index value")){
