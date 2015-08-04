@@ -49,7 +49,7 @@ class BdmUtility {
     public static def getConnection(){
         def sessionFactory = ServletContextHolder.servletContext.
                 getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
-        return sessionFactory.openSession().connection()
+        return sessionFactory.currentSession.connection()
     }
 
 
