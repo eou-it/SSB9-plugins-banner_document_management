@@ -24,8 +24,8 @@ class DocumentTypeService extends ServiceBase {
      * @param offset
      * @return
      */
-     def getCommonMatchingDocs(filterText, max, offset) {
-        filterText = BdmUtility.getLikeFormattedFilter(filterText)
+     def getCommonMatchingDocs(text, max, offset) {
+        def filterText = BdmUtility.getLikeFormattedFilter(text)
         def paginationParams = BdmUtility.getPagingParams( max, offset )
         def documents = []
         def sql
