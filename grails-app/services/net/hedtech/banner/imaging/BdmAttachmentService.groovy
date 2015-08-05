@@ -59,7 +59,7 @@ class BdmAttachmentService extends ServiceBase {
         }catch (BdmsException bdme) {
             if(bdme?.cause?.toString()?.contains("Invalid index value")){
                 throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("default.invalid.type.exception", []))
+                        new BusinessLogicValidationException("invalid.type.exception", []))
             }
             throw new ApplicationException(BdmAttachmentService,
                     new BusinessLogicValidationException("default.BdmAttachmentService", []))
