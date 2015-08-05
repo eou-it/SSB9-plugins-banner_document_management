@@ -19,7 +19,7 @@ class DocumentTypeService extends ServiceBase {
 
     /**
      *
-     * @param filterText
+     * @param text
      * @param max
      * @param offset
      * @return
