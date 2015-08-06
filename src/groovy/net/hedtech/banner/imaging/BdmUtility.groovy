@@ -4,10 +4,21 @@
 package net.hedtech.banner.imaging
 
 import org.apache.commons.lang.StringUtils
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.hibernate.SessionFactory
+import org.hibernate.dialect.Dialect
+import org.hibernate.engine.SessionFactoryImplementor
+import org.hibernate.tool.hbm2ddl.DatabaseMetadata
+
+import java.sql.SQLException
 
 class BdmUtility {
+
+    private static final Logger log = Logger.getLogger(BdmUtility.class)
+
+    static final String BDM_VERSION_TABLE = "EURVERS"
 
     def static final DEFAULT_MAX_SIZE = 10
     def static final DEFAULT_OFFSET = 0
@@ -52,5 +63,38 @@ class BdmUtility {
         return sessionFactory.currentSession.connection()
     }
 
+
+    /**
+     *
+     * @return
+     */
+    public static def getDialect(){
+        SessionFactory sessionFactory = ServletContextHolder.servletContext.
+                getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
+        Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getDialect();
+        return dialect
+    }
+
+
+    public static boolean checkIfTableExists(String tableName){
+        try {
+            DatabaseMetadata databaseMetadata=new DatabaseMetadata(getConnection(),getDialect());
+            if (databaseMetadata.isTable(tableName)) {
+                log.info("Table " + tableName + " exists");
+                return true;
+            }
+
+            log.info("Table " + tableName + " does not exist");
+        }
+        catch (  SQLException sqle) {
+              return false
+        }
+        return false;
+    }
+
+    public static boolean isBDMInstalled()
+    {
+        return checkIfTableExists(BDM_VERSION_TABLE)
+    }
 
 }
