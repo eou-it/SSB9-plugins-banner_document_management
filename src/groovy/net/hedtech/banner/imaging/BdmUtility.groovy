@@ -11,6 +11,7 @@ import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
 
@@ -94,7 +95,17 @@ class BdmUtility {
 
     public static boolean isBDMInstalled()
     {
-        return checkIfTableExists(BDM_VERSION_TABLE)
+        def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
+        boolean isBdmInstalled = false
+
+        if (session?.getAttribute("BDM_INSTALLED") != null) {
+            return session?.getAttribute("BDM_INSTALLED")
+        }else{
+            isBdmInstalled = checkIfTableExists(BDM_VERSION_TABLE)
+            session?.setAttribute("BDM_INSTALLED",isBdmInstalled)
+        }
+
+        return isBdmInstalled
     }
 
 }
