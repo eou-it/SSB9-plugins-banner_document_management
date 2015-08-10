@@ -11,6 +11,7 @@ import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
 
@@ -87,14 +88,24 @@ class BdmUtility {
             log.info("Table " + tableName + " does not exist");
         }
         catch (  SQLException sqle) {
-              return false
+              throw sqle
         }
         return false;
     }
 
-    public static boolean isBDMInstalled()
-    {
-        return checkIfTableExists(BDM_VERSION_TABLE)
+    public static boolean isBDMInstalled(){
+        def flag = false
+        def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
+        try{
+            flag = checkIfTableExists(BDM_VERSION_TABLE)
+        } catch(SQLException sqle){
+            flag = false
+        } finally{
+            session."BDM_INSTALLED" = flag
+        }
+        return flag
     }
+
+
 
 }
