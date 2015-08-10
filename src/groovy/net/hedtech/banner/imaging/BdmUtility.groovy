@@ -88,24 +88,24 @@ class BdmUtility {
             log.info("Table " + tableName + " does not exist");
         }
         catch (  SQLException sqle) {
-              return false
+              throw sqle
         }
         return false;
     }
 
-    public static boolean isBDMInstalled()
-    {
+    public static boolean isBDMInstalled(){
+        def flag = false
         def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-        boolean isBdmInstalled = false
-
-        if (session?.getAttribute("BDM_INSTALLED") != null) {
-            return session?.getAttribute("BDM_INSTALLED")
-        }else{
-            isBdmInstalled = checkIfTableExists(BDM_VERSION_TABLE)
-            session?.setAttribute("BDM_INSTALLED",isBdmInstalled)
+        try{
+            flag = checkIfTableExists(BDM_VERSION_TABLE)
+        } catch(SQLException sqle){
+            flag = false
+        } finally{
+            session."BDM_INSTALLED" = flag
         }
-
-        return isBdmInstalled
+        return flag
     }
+
+
 
 }
