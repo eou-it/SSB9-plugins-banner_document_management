@@ -101,7 +101,7 @@ class BdmUtility {
         } catch(SQLException sqle){
             flag = false
         } finally{
-            session."BDM_INSTALLED" = flag
+            session["BDM_INSTALLED"] = flag
         }
         return flag
     }
