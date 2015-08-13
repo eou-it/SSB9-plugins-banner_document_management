@@ -62,7 +62,7 @@ class BdmAttachmentService extends ServiceBase {
                         new BusinessLogicValidationException("invalid.type.exception", []))
             }
             throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
+                    new BusinessLogicValidationException("unknown.exception", []))
         }
 
     }
