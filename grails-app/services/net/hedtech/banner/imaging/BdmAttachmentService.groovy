@@ -48,7 +48,7 @@ class BdmAttachmentService extends ServiceBase {
      * @param comment
      * @return
      */
-    def createDocument(Map params, String filename, Map attribs , String vpdiCode ) throws BdmsException{
+    def createDocument(Map params, String filename, Map attribs , String vpdiCode ) {
 
         try {
             def bdm = new BDMManager();
@@ -69,7 +69,7 @@ class BdmAttachmentService extends ServiceBase {
 
 
 
-    def viewDocument(Map params, Map criteria, String vpdiCode ) throws BdmsException{
+    def viewDocument(Map params, Map criteria, String vpdiCode ) {
         try {
             def bdm = new BDMManager();
             JSONObject bdmParams = new JSONObject(params)
@@ -85,11 +85,11 @@ class BdmAttachmentService extends ServiceBase {
             }
         catch(WebServiceException e){
             log.error('BdmAttachmentService',e)
-            throw new BdmsException( 'BdmAttachmentService', e )
+            throw new ApplicationException( BdmAttachmentService, e )
         }
     }
 
-    def deleteDocument(Map params, List docIds, String vpdiCode ) throws BdmsException{
+    def deleteDocument(Map params, List docIds, String vpdiCode ){
 
         def bdm = new BDMManager();
         try {
@@ -106,7 +106,7 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def listDocuments(Map params, Map criteria, String vpdiCode ) throws BdmsException{
+    def listDocuments(Map params, Map criteria, String vpdiCode ) {
 
         def bdm = new BDMManager();
         JSONObject bdmParams = new JSONObject(params)
