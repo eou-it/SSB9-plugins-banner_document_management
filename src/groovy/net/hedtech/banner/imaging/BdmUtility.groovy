@@ -5,6 +5,7 @@ package net.hedtech.banner.imaging
 
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.hibernate.SessionFactory
@@ -107,5 +108,12 @@ class BdmUtility {
     }
 
 
+     public static def getBdmServerConfigurations(){
+         def bdmServerConfigurations =[:]
+         ConfigurationHolder.config.bdmserver.each{key,value->
+             bdmServerConfigurations.put(key,value)
+         }
+        return bdmServerConfigurations
+     }
 
 }
