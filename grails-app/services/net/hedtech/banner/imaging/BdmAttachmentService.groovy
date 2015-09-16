@@ -23,7 +23,7 @@ class BdmAttachmentService extends ServiceBase {
         File fileDest
         String fileName
 
-        String tempPath =  ConfigurationHolder.config.bdm.file.location
+        String tempPath =  ConfigurationHolder.config.bdmserver.file.location
 
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()

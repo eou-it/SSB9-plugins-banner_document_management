@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import grails.converters.JSON
+import net.hedtech.banner.decorators.BdmMessageDecorator
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.bdm.vo.ViewDocVO
@@ -42,7 +44,7 @@ class BdmCompositeAttachmentService {
             def map = getMapFromUrlString(viewDocVO.viewURLNoCredential)
             def documentDecorator = new BdmAttachmentDecorator()
             documentDecorator.type = map.get("AppName")
-            documentDecorator.docId =getDocIdFromUrlString(viewDocVO.viewURLNoCredential)
+            documentDecorator.docId =map.get("DocId")
             documentDecorator.ref = map.get("AppName") +"/" + map.get("DataSource") +"/" + map.get("DocId")
             documentDecorator.indexes = viewDocVO.docAttributes
             decorators << documentDecorator
@@ -131,5 +133,36 @@ class BdmCompositeAttachmentService {
             }
         }
         return qapiReq
+    }
+
+    def create(Map params){
+        BdmMessageDecorator message = new BdmMessageDecorator()
+        Map infoMap = [:]
+
+        if(params.containsKey("file")){
+            def file = params.get("file")
+            def map = bdmAttachmentService.createBDMLocation(file)
+
+            infoMap.put("status","Placed Successfully!")
+            infoMap.put("location",map.get("absoluteFileName")) // TODO To send an encrypted format of the filepath
+            message.setMessage(infoMap)
+
+            return message
+        }else{
+            String vpdiCode = params?.vpdiCode
+
+            Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
+            try{
+                def viewDocVos= bdmAttachmentService.createDocument(bdmServerConfigurations, params.get("absoluteFileName"), params.indexes, vpdiCode)
+                infoMap.put("status","Upload Done!")
+            }catch(Exception e){
+                infoMap.put("error",e.message)
+                message.setMessage(infoMap)
+                return message
+            }
+
+            message.setMessage(infoMap)
+            return message
+        }
     }
 }
