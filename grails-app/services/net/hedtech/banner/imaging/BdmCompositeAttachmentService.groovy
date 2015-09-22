@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-import grails.converters.JSON
 import net.hedtech.banner.decorators.BdmMessageDecorator
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
@@ -136,18 +135,18 @@ class BdmCompositeAttachmentService {
     }
 
     def create(Map params){
-        BdmMessageDecorator message = new BdmMessageDecorator()
+        def decorator = new BdmMessageDecorator()
         Map infoMap = [:]
 
         if(params.containsKey("file")){
             def file = params.get("file")
-            def map = bdmAttachmentService.createBDMLocation(file)
+            def bdmLocationDetails = bdmAttachmentService.createBDMLocation(file)
 
             infoMap.put("status","Placed Successfully!")
-            infoMap.put("location",map.get("absoluteFileName")) // TODO To send an encrypted format of the filepath
-            message.setMessage(infoMap)
+            infoMap.put("location",bdmLocationDetails.get("absoluteFileName")) // TODO To send an encrypted format of the filepath
+            decorator.setMessage(infoMap)
 
-            return message
+            return decorator
         }else{
             String vpdiCode = params?.vpdiCode
 
@@ -157,12 +156,12 @@ class BdmCompositeAttachmentService {
                 infoMap.put("status","Upload Done!")
             }catch(Exception e){
                 infoMap.put("error",e.message)
-                message.setMessage(infoMap)
-                return message
+                decorator.setMessage(infoMap)
+                return decorator
             }
 
-            message.setMessage(infoMap)
-            return message
+            decorator.setMessage(infoMap)
+            return decorator
         }
     }
 }

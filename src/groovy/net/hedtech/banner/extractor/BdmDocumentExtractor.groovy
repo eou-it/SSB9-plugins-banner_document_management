@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.extractor
 
 import net.hedtech.restfulapi.extractors.RequestExtractor
@@ -6,9 +9,6 @@ import org.springframework.web.multipart.MultipartRequest
 
 import javax.servlet.http.HttpServletRequest
 
-/**
- * Created by swateekj on 9/15/2015.
- */
 class BdmDocumentExtractor implements RequestExtractor{
 
     @Override

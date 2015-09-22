@@ -1,11 +1,11 @@
+/*******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.decorators
 
-/**
- * Created by swateekj on 9/15/2015.
- */
 class BdmMessageDecorator implements Serializable {
 
-    Map message;
+    private Map message;
 
     Map getMessage() {
         return message
@@ -16,7 +16,6 @@ class BdmMessageDecorator implements Serializable {
     }
 
     @Override
-
     public String toString() {
         return "BdmMessageDecorator{" +
                 " Message =" + message +
