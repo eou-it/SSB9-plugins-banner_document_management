@@ -8,10 +8,13 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.bdm.vo.ViewDocVO
 import net.hedtech.restfulapi.PagedResultArrayList
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class BdmCompositeAttachmentService {
 
     def bdmAttachmentService
+
+    static String tempPath =  ConfigurationHolder.config.bdmserver.file.location
 
     /** Fetch the documents from Ax server and  wrap the
      * document details(indexes) into Decorator and return
@@ -21,6 +24,7 @@ class BdmCompositeAttachmentService {
 
         String vpdiCode = params?.vpdiCode
         Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
+        bdmServerConfigurations.put("AppName",params.get("formName"))
         Map criteria = [:]
 
         boolean isPostOperation =  RestfulApiValidationUtility.isQApiRequest(params)
@@ -98,12 +102,11 @@ class BdmCompositeAttachmentService {
     def delete(Map params)throws ApplicationException{
         String vpdiCode = params?.vpdiCode
         Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
-
+        bdmServerConfigurations.put("AppName",params.get("formName"))
         if(!(params.id)){
             def criteria =(isQueryWithAttributes(params))?addCriteria([:] ,params) :getDocIds(params)
 
             if(!criteria){
-
                 throw new ApplicationException("BDM-Documents" ,"Delete operation should include either indexes or docIds field in JSON")
             }
             bdmAttachmentService.deleteDocument(bdmServerConfigurations,criteria ,vpdiCode)
@@ -135,33 +138,35 @@ class BdmCompositeAttachmentService {
     }
 
     def create(Map params){
-        def decorator = new BdmMessageDecorator()
+        BdmMessageDecorator message = new BdmMessageDecorator()
         Map infoMap = [:]
 
         if(params.containsKey("file")){
             def file = params.get("file")
-            def bdmLocationDetails = bdmAttachmentService.createBDMLocation(file)
+            def map = bdmAttachmentService.createBDMLocation(file)
+
+            String userDir =   map.get('userDir').toString().replace(tempPath,"").replace(map.get('fileName'),"")
 
             infoMap.put("status","Placed Successfully!")
-            infoMap.put("location",bdmLocationDetails.get("absoluteFileName")) // TODO To send an encrypted format of the filepath
-            decorator.setMessage(infoMap)
+            infoMap.put("fileName",map.get('fileName'))
+            infoMap.put("directory",userDir)
+            message.setMessage(infoMap)
 
-            return decorator
+            return message
         }else{
             String vpdiCode = params?.vpdiCode
 
             Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
-            try{
-                def viewDocVos= bdmAttachmentService.createDocument(bdmServerConfigurations, params.get("absoluteFileName"), params.indexes, vpdiCode)
-                infoMap.put("status","Upload Done!")
-            }catch(Exception e){
-                infoMap.put("error",e.message)
-                decorator.setMessage(infoMap)
-                return decorator
-            }
+            bdmServerConfigurations.put("AppName",params.get("formName"))
+            String fileDirectory = tempPath + params.get("directory")
+            File fileDest = new File(fileDirectory, params.get("fileName"))
+            def filePath = fileDest.getAbsolutePath()
 
-            decorator.setMessage(infoMap)
-            return decorator
+            def viewDocVos= bdmAttachmentService.createDocument(bdmServerConfigurations, filePath.toString() , params.indexes, vpdiCode)
+            infoMap.put("status","Upload Done!")
+
+            message.setMessage(infoMap)
+            return message
         }
     }
 }
