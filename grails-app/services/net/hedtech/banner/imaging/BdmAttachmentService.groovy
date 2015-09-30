@@ -38,6 +38,9 @@ class BdmAttachmentService extends ServiceBase {
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
         map.fileName = fileName
+        map.hashedName = hashedName
+
+        log.debug("BDM temp file details are :" + map)
 
         return map
     }
@@ -57,9 +60,13 @@ class BdmAttachmentService extends ServiceBase {
 
             bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
         }catch (BdmsException bdme) {
+            log.error("ERROR: Error while creating a BDM document",bdme)
+
             if(bdme?.cause?.toString()?.contains("Invalid index value")){
                 throw new ApplicationException(BdmAttachmentService,
                         new BusinessLogicValidationException("invalid.type.exception", []))
+            }else if(bdme?.cause?.toString()?.contains("A unique key violation has occured")){
+                throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
             }
             throw new ApplicationException(BdmAttachmentService,
                     new BusinessLogicValidationException("unknown.exception", []))
@@ -76,13 +83,15 @@ class BdmAttachmentService extends ServiceBase {
             JSONObject queryCriteria = new JSONObject(criteria)
             bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
         } catch (BdmsException bdme) {
-                if(bdme.getCause()?.toString()?.contains("Invalid index value")){
-                    throw new ApplicationException(BdmAttachmentService,
-                            new BusinessLogicValidationException("default.invalid.type.exception", []))
-                }
+            log.error("ERROR: Error while viewing  BDM documents",bdme)
+
+            if(bdme.getCause()?.toString()?.contains("Invalid index value")){
                 throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("default.BdmAttachmentService", []))
+                        new BusinessLogicValidationException("default.invalid.type.exception", []))
             }
+            throw new ApplicationException(BdmAttachmentService,
+                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
+        }
         catch(WebServiceException e){
             log.error('BdmAttachmentService',e)
             throw new BdmsException( 'BdmAttachmentService', e )
@@ -97,6 +106,8 @@ class BdmAttachmentService extends ServiceBase {
 
             bdm.deleteDocument(bdmParams, docIds, vpdiCode);
         } catch (BdmsException bdme) {
+            log.error("ERROR: Error while deleting  BDM documents",bdme)
+
             if(bdme.getCause()?.toString()?.contains("Invalid index value")){
                 throw new ApplicationException(BdmAttachmentService,
                         new BusinessLogicValidationException("default.invalid.type.exception", []))
