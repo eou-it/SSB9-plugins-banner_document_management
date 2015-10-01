@@ -6,17 +6,17 @@ package net.hedtech.banner.imaging
 
 class BdmAttachmentDecorator implements Serializable{
 
-    String type
+    String dmType
     String docId
-    String ref
+    String docRef
     Map indexes
 
     @Override
     public String toString(){
      return """BdmAttachmentDecorator{
-               type=$type
+               type=$dmType
                docId =$docId
-               ref = $ref
+               docRef = $docRef
                indexed = $indexes"""
    }
 }
