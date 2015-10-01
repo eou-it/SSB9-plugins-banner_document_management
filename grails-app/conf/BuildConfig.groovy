@@ -57,5 +57,7 @@ grails.project.dependency.resolution = {
 
         runtime 'jdom:jdom:1.0'
 
+        runtime 'commons-codec:commons-codec:1.3'
+
     }
 }

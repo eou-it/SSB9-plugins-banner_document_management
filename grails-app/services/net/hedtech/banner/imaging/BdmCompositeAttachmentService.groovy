@@ -134,13 +134,14 @@ class BdmCompositeAttachmentService {
     //TODO : DO JSON validation
     private def uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode){
         def decorators = []
+        def tempPath = ConfigurationHolder.config.bdmserver.file.location
         params.get('fileRefs')?.each { String fileRefPath ->
-            String path = ConfigurationHolder.config.bdmserver.file.location + fileRefPath
-            File fileDest = new File(path)
+            File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists() ) {
                 throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.fileRef.request", [fileRefPath]))
             }
-            bdmAttachmentService.createDocument(bdmServerConfigurations, path, params.indexes, vpdiCode)
+
+            bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
             def decorator = getBdmAttachementDecorators(bdmAttachmentService.viewDocument(bdmServerConfigurations, params.indexes, vpdiCode))
             decorators << decorator[0]
         }
