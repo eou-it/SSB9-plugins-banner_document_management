@@ -38,12 +38,18 @@ class BdmDocumentViewService {
     def createDocumentViewUri(String docRef, String vpdiCode ) throws BdmsException {
 
         Map bdmServerConfig = BdmUtility.getBdmServerConfigurations()
+        log.debug("docRef=" + docRef + " vpdiCode=" + vpdiCode)
 
         try {
             def bdm = new BDMManager();
 
+            def decodedDocRef = docRef;
+            if (!docRef.contains('/'))
+                decodedDocRef = new String(docRef.decodeBase64());
+            log.debug("decodedDocRef=" + decodedDocRef);
+
             JSONObject bdmParams = new JSONObject(bdmServerConfig)
-            String uri = bdm.createViewDocumentUrl(bdmParams, docRef, vpdiCode);
+            String uri = bdm.createViewDocumentUrl(bdmParams, decodedDocRef, vpdiCode);
 
         } catch(Exception ex){
             Log.debug ex.stackTrace
