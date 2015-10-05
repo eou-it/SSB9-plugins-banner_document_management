@@ -44,11 +44,11 @@ class BdmCompositeAttachmentService {
         def decorators =[]
         viewDocVos.each {ViewDocVO viewDocVO ->
             def map = getMapFromUrlString(viewDocVO.viewURLNoCredential)
-            def docRef =(map.get("AppName") +"/" + map.get("DataSource") +"/" + map.get("DocId")).bytes.encodeBase64()?.toString()
+            def docRef =(map.get("DataSource") +"/" + map.get("AppName") +"/" + map.get("DocId")).bytes.encodeBase64()?.toString()
             def documentDecorator = new BdmAttachmentDecorator()
             documentDecorator.dmType = map.get("AppName")
-            documentDecorator.docId =map.get("DocId")
-            documentDecorator.docRef =docRef
+            documentDecorator.docId = map.get("DocId")
+            documentDecorator.docRef = docRef
             documentDecorator.indexes = viewDocVO.docAttributes
             decorators << documentDecorator
         }
@@ -109,7 +109,7 @@ class BdmCompositeAttachmentService {
 
             infoMap.put("status", messageSource.getMessage("file.upload.success",null,"success",Locale.getDefault()))
             infoMap.put("message",messageSource.getMessage("file.upload.success.message",null,Locale.getDefault()))
-            infoMap.put("fileRef", map.get("hashedName") + File.separator?.toString() + map.get('fileName'))
+            infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
 
             log.info("Created file successfully. Response details :" + infoMap)
             return infoMap
@@ -123,7 +123,7 @@ class BdmCompositeAttachmentService {
                 throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
             }
 
-            def decorators =uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode)
+            def decorators = uploadDocToAX(params, bdmServerConfigurations, vpdiCode)
 
             log.info("Uploaded file to AX successfully. Response details :" + decorators)
             return decorators
