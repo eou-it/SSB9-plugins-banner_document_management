@@ -102,34 +102,20 @@ class BdmCompositeAttachmentService {
     def create(Map params) {
         log.debug("Creating BDM documents :" + params)
 
-        if (params.containsKey("file")) {
-            Map infoMap = [:]
-            def file = params.get("file")
-            def map = bdmAttachmentService.createBDMLocation(file)
+        String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
 
-            infoMap.put("status", messageSource.getMessage("file.upload.success",null,"success",Locale.getDefault()))
-            infoMap.put("message",messageSource.getMessage("file.upload.success.message",null,Locale.getDefault()))
-            infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
+        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
+        bdmServerConfigurations.put("AppName", params.dmType)
 
-            log.info("Created file successfully. Response details :" + infoMap)
-            return infoMap
-        } else {
-            String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")?null:params?.vpdiCode
-
-            Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
-            bdmServerConfigurations.put("AppName",params.dmType)
-
-            if(!bdmServerConfigurations.get("AppName")){
-                throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
-            }
-
-            def decorators = uploadDocToAX(params, bdmServerConfigurations, vpdiCode)
-
-            log.info("Uploaded file to AX successfully. Response details :" + decorators)
-            return decorators
+        if (!bdmServerConfigurations.get("AppName")) {
+            throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
         }
-    }
 
+        def decorators = uploadDocToAX(params, bdmServerConfigurations, vpdiCode)
+
+        log.info("Uploaded file to AX successfully. Response details :" + decorators)
+        return decorators
+    }
 
     //TODO : DO JSON validation
     private def uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode){

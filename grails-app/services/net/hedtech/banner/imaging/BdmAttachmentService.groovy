@@ -62,9 +62,9 @@ class BdmAttachmentService extends ServiceBase {
         }catch (BdmsException bdme) {
             log.error("ERROR: Error while creating a BDM document",bdme)
 
-            if(bdme?.cause?.toString()?.contains("Invalid index value")){
+            if(bdme?.cause?.toString()?.contains("Invalid index")){
                 throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("invalid.type.exception", []))
+                        new BusinessLogicValidationException("invalid.index.value", [bdme?.cause?.message]))
             }else if(bdme?.cause?.toString()?.contains("A unique key violation has occured")){
                 throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
             }
