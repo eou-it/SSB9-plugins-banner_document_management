@@ -18,42 +18,46 @@ class BdmDocumentViewService {
     private static final Logger log = Logger.getLogger(getClass())
 
     def create(Map params) {
-        BdmDocumentViewDecorator info = new BdmDocumentViewDecorator()
+        log.debug("requestParams: ${params}")
 
-        String vpdiCode = params?.vpdiCode
-        String docRef = params?.docRef;
+        def BdmDocumentViewDecorator returnedInfo = new BdmDocumentViewDecorator()
+        def String vpdiCode = params?.vpdiCode
+        def String docRef = params?.docRef;
 
         try {
-
-            info.uri = createDocumentViewUri(docRef, vpdiCode);
-            info.status = "OK"
+            returnedInfo.uri = createDocumentViewUri(docRef, vpdiCode);
+            returnedInfo.status = "OK"
         } catch (Exception ex) {
-            info.status = "ERROR"
-            info.message = ex.getMessage();
+            returnedInfo.status = "ERROR"
+            returnedInfo.message = ex.getMessage();
+            log.error(ex.getMessage());
         }
 
-        return info
+        log.debug("reponse: ${returnedInfo}")
+        return returnedInfo
     }
 
     def createDocumentViewUri(String docRef, String vpdiCode ) throws BdmsException {
+        log.debug("createDocumentViewUri: docRef=${docRef} vpdiCode= ${vpdiCode}")
 
-        Map bdmServerConfig = BdmUtility.getBdmServerConfigurations()
-        log.debug("docRef=" + docRef + " vpdiCode=" + vpdiCode)
+        def Map bdmServerConfig = BdmUtility.getBdmServerConfigurations()
 
         try {
             def bdm = new BDMManager();
-
             def decodedDocRef = docRef;
             if (!docRef.contains('/'))
                 decodedDocRef = new String(docRef.decodeBase64());
-            log.debug("decodedDocRef=" + decodedDocRef);
+            log.debug("decodedDocRef= $decodedDocRef");
 
             JSONObject bdmParams = new JSONObject(bdmServerConfig)
             String uri = bdm.createViewDocumentUrl(bdmParams, decodedDocRef, vpdiCode);
-
-        } catch(Exception ex){
-            Log.debug ex.stackTrace
-            throw ex;
+            return uri;
+        } catch(BdmsException ex){
+            Log.error ex.stackTrace
+            throw new ApplicationException(BdmDocumentViewService,
+                                            new BusinessLogicValidationException("failure: ${ex}", ["${ex}"]))
+        } catch(Exception ex) {
+            Log.error ex.stackTrace
         }
     }
 }
