@@ -126,4 +126,17 @@ class BdmAttachmentService extends ServiceBase {
         bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
     }
 
+    def updateDocument(Map params, String docRef, Map attribs , String vpdiCode ) throws BdmsException{
+
+        def bdm = new BDMManager();
+        JSONObject updtIndexes = new JSONObject(attribs)
+        JSONObject bdmParams = new JSONObject(params)
+
+        try{
+            bdm.updateDocument(bdmParams, docRef, updtIndexes, vpdiCode)
+         }catch (Exception e){
+
+         }
+    }
+
 }

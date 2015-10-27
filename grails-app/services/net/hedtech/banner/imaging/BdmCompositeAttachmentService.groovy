@@ -171,4 +171,16 @@ class BdmCompositeAttachmentService {
         }
         return qapiReq
     }
+
+    def update(Map params)throws ApplicationException{
+
+        String docRef = params.docRef
+        String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
+
+        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
+        bdmServerConfigurations.put("AppName", params.dmType)
+
+        bdmAttachmentService.updateDocument(bdmServerConfigurations, docRef, params.indexes, vpdiCode)
+        print params
+    }
 }
