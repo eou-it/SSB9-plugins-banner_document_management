@@ -8,6 +8,7 @@ import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
 
@@ -16,6 +17,7 @@ import javax.xml.ws.WebServiceException
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
+    private static final Logger log = Logger.getLogger(getClass())
 
     def Map createBDMLocation(file)
     {
@@ -135,8 +137,9 @@ class BdmAttachmentService extends ServiceBase {
         try{
             bdm.updateDocument(bdmParams, docRef, updtIndexes, vpdiCode)
          }catch (Exception e){
-
+            log.error("fails to update document indexes (${docRef})", e);
+            throw new ApplicationException(BdmAttachmentService,
+                    new BusinessLogicValidationException("Update document fails", []))
          }
     }
-
 }

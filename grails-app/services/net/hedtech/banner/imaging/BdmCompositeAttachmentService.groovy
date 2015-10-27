@@ -174,7 +174,11 @@ class BdmCompositeAttachmentService {
 
     def update(Map params)throws ApplicationException{
 
-        String docRef = params.docRef
+        def docRef = params.docRef;
+        if (!docRef.contains('/'))
+            docRef = new String(docRef.decodeBase64());
+        log.debug("decoded docRef= $docRef");
+
         String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
 
         Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
