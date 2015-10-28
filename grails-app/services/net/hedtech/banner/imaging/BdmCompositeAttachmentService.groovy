@@ -6,7 +6,6 @@ package net.hedtech.banner.imaging
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
-import net.hedtech.bdm.vo.ViewDocVO
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
@@ -14,6 +13,7 @@ class BdmCompositeAttachmentService {
 
     def bdmAttachmentService
     def messageSource
+     final String SUPPORTED_OPERATOR = "#OR"
 
 
     /** Fetch the documents from Ax server and  wrap the
@@ -23,16 +23,17 @@ class BdmCompositeAttachmentService {
         log.debug("Getting list of BDM documents :" + params)
 
         String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")?null:params?.vpdiCode
-        Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
-        Map criteria = [:]
+        Map bdmServerConfigurations =validateAndGetBdmServerConfigurations(params)
+
+        def criteriaList = []
 
         boolean isPostOperation =  RestfulApiValidationUtility.isQApiRequest(params)
         if(isPostOperation){
-            addCriteria(criteria,params)
-            log.debug("Post operations criteria  :" + criteria)
+            getListOfCriteria(criteriaList,params)
+            log.debug("Post operations criteria  :" + criteriaList)
         }
 
-        def decorators = getBdmAttachementDecorators(bdmAttachmentService.viewDocument(bdmServerConfigurations, criteria, vpdiCode))
+        def decorators = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, criteriaList, vpdiCode))
         return new PagedResultArrayList(decorators ,decorators.size())
     }
 
@@ -40,22 +41,49 @@ class BdmCompositeAttachmentService {
      * Wrap the document details into decorator and
      * return the list of decorators
      * */
-    private def getBdmAttachementDecorators(List viewDocVos){
+    private def getBdmAttachementDecorators(List resourceDetails){
+        log.debug("GetBdmAttachementDecorators : " + resourceDetails)
         def decorators =[]
-        viewDocVos.each {ViewDocVO viewDocVO ->
-            def map = getMapFromUrlString(viewDocVO.viewURLNoCredential)
-            def docRef =(map.get("DataSource") +"/" + map.get("AppName") +"/" + map.get("DocId")).bytes.encodeBase64()?.toString()
+        resourceDetails.each {org.json.JSONObject resourceDetail ->
             def documentDecorator = new BdmAttachmentDecorator()
-            documentDecorator.dmType = map.get("AppName")
-            documentDecorator.docId = map.get("DocId")
-            documentDecorator.docRef = docRef
-            documentDecorator.indexes = viewDocVO.docAttributes
+            documentDecorator.docRef = resourceDetail.opt('docRef')
+            documentDecorator.dmType = resourceDetail.opt("dmType")
+            documentDecorator.docId = resourceDetail.opt("docId")
+            documentDecorator.indexes = toMap(resourceDetail.opt("indexes"))
             decorators << documentDecorator
         }
         log.debug("Decorator details :" + decorators)
         decorators
     }
 
+    /** Converts JSONObject to map used by view BDM doc method*/
+    private def toMap(org.json.JSONObject indexes){
+        def indexValuesAsMap = [:]
+        def keys = indexes.keys()
+        while(keys.hasNext()){
+            def key = keys.next()
+            indexValuesAsMap.put(key , indexes.opt(key))
+        }
+        indexValuesAsMap
+    }
+
+    /**
+     * Used by list method for supporting Logical operator
+     * in the INPUT json
+     * */
+    private  def getListOfCriteria(List criterias ,Map params){
+        Map indexes = params.get("indexes")
+        if(indexes?.containsKey(SUPPORTED_OPERATOR)){
+            org.json.JSONArray  indexValues = indexes.get(SUPPORTED_OPERATOR)
+            def indexLength = indexValues.length()
+            (0..(indexLength-1)).each { length ->
+                criterias <<  new org.json.JSONObject(indexValues.opt(length))
+            }
+        }else{
+            criterias << new org.json.JSONObject(indexes)
+        }
+        criterias
+    }
 
     /**
      * Used when querying using QAPI . Add query criteria to the document.
@@ -104,18 +132,29 @@ class BdmCompositeAttachmentService {
 
         String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
 
-        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
-        bdmServerConfigurations.put("AppName", params.dmType)
-
-        if (!bdmServerConfigurations.get("AppName")) {
-            throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
-        }
+        Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
 
         def decorators = uploadDocToAX(params, bdmServerConfigurations, vpdiCode)
 
         log.info("Uploaded file to AX successfully. Response details :" + decorators)
         return decorators
     }
+
+
+
+    private def validateAndGetBdmServerConfigurations(def params){
+        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
+        bdmServerConfigurations.put("AppName", params?.dmType)
+
+        if (!bdmServerConfigurations.get("AppName")) {
+            throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
+        }
+        return bdmServerConfigurations
+    }
+
+
+
+
 
     //TODO : DO JSON validation
     private def uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode){

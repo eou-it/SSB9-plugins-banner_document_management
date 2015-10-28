@@ -77,6 +77,27 @@ class BdmAttachmentService extends ServiceBase {
     }
 
 
+    def searchDocument(Map params, List queryCriterias, String vpdiCode ) throws BdmsException{
+        try {
+            def bdm = new BDMManager();
+            JSONObject bdmParams = new JSONObject(params)
+            bdm.searchDocuments(bdmParams, queryCriterias, vpdiCode);
+        } catch (BdmsException bdme) {
+            log.error("ERROR: Error while searching  BDM documents",bdme)
+
+            if(bdme.getCause()?.toString()?.contains("Invalid index value")){
+                throw new ApplicationException(BdmAttachmentService,
+                        new BusinessLogicValidationException("default.invalid.type.exception", []))
+            }
+            throw new ApplicationException(BdmAttachmentService,
+                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
+        }
+        catch(WebServiceException e){
+            log.error('BdmAttachmentService',e)
+            throw new BdmsException( 'BdmAttachmentService', e )
+        }
+    }
+
 
     def viewDocument(Map params, Map criteria, String vpdiCode ) throws BdmsException{
         try {
