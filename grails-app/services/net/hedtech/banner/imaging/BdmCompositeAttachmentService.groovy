@@ -213,6 +213,8 @@ class BdmCompositeAttachmentService {
 
     def update(Map params)throws ApplicationException{
 
+        def infoMap = [:]
+
         def docRef = params.docRef;
         if (!docRef.contains('/'))
             docRef = new String(docRef.decodeBase64());
@@ -224,6 +226,10 @@ class BdmCompositeAttachmentService {
         bdmServerConfigurations.put("AppName", params.dmType)
 
         bdmAttachmentService.updateDocument(bdmServerConfigurations, docRef, params.indexes, vpdiCode)
-        print params
+
+        infoMap.put("status","Success")
+        infoMap.put("message","Document updated successfully!")
+
+        infoMap
     }
 }
