@@ -8,6 +8,7 @@ import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.json.JSONObject
 
 class BdmCompositeAttachmentService {
 
@@ -167,7 +168,7 @@ class BdmCompositeAttachmentService {
             }
 
             bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
-            def decorator = getBdmAttachementDecorators(bdmAttachmentService.viewDocument(bdmServerConfigurations, params.indexes, vpdiCode))
+            def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
             decorators << decorator[0]
         }
         return decorators[0]
