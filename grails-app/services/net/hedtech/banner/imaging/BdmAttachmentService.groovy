@@ -158,9 +158,9 @@ class BdmAttachmentService extends ServiceBase {
         try{
             bdm.updateDocument(bdmParams, docRef, updtIndexes, vpdiCode)
          }catch (Exception e){
-            log.error("fails to update document indexes (${docRef})", e);
+            log.error("Failed to update document indexes (${docRef})", e);
             throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("Update document fails", []))
+                    new BusinessLogicValidationException("Updating document failed", []))
          }
     }
 }
