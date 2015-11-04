@@ -1,3 +1,7 @@
+/*******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
+
 grails.project.dependency.resolver = "ivy"
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
