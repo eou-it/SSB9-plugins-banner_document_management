@@ -14,7 +14,37 @@ class BdmCompositeAttachmentService {
 
     def bdmAttachmentService
     def messageSource
-     final String SUPPORTED_OPERATOR = "#OR"
+    final String SUPPORTED_OPERATOR = "#OR"
+
+    /** Fetch a particular document from Ax server
+     *  and wrap the document details(indexes) into
+     *  Decorator */
+    def get(def encodedDocRef){
+        log.debug("BdmCompositeAttachmentService Show :: Encoded document reference :" + encodedDocRef)
+
+        def docRefMap = getConfigDetailsAndDocId(encodedDocRef)
+        log.info("Decoded document reference is :" + docRefMap )
+
+        def bdmConfigurations = BdmUtility.getBdmServerConfigurations(docRefMap.dmType , docRefMap.BdmDataSource)
+
+        return getDocumentDecorator(bdmAttachmentService.searchDocument(bdmConfigurations, new String(encodedDocRef.decodeBase64()), null))
+    }
+
+
+    private def getConfigDetailsAndDocId(def encodedData){
+        def configDetails =[:]
+        byte[] decoded = encodedData.decodeBase64()
+        def decodedData= new String(decoded).split("/")
+        if(decodedData.length != 3 ){
+            log.error("Invalid document reference in the reference :: "+new String(decoded))
+            throw new ApplicationException("BDM-Documents :Invalid document reference", new BusinessLogicValidationException("", []))
+        }
+
+        configDetails.put("dmType", decodedData[1])
+        configDetails.put("BdmDataSource" ,decodedData[0])
+
+        return configDetails
+    }
 
 
     /** Fetch the documents from Ax server and  wrap the
@@ -46,16 +76,21 @@ class BdmCompositeAttachmentService {
         log.debug("GetBdmAttachementDecorators : " + resourceDetails)
         def decorators =[]
         resourceDetails.each {org.json.JSONObject resourceDetail ->
-            def documentDecorator = new BdmAttachmentDecorator()
-            documentDecorator.docRef = resourceDetail.opt('docRef')
-            documentDecorator.dmType = resourceDetail.opt("dmType")
-            documentDecorator.docId = resourceDetail.opt("docId")
-            documentDecorator.indexes = toMap(resourceDetail.opt("indexes"))
-            decorators << documentDecorator
+            decorators << getDocumentDecorator(resourceDetail)
         }
         log.debug("Decorator details :" + decorators)
         decorators
     }
+
+    private def getDocumentDecorator(org.json.JSONObject resourceDetail ){
+        def documentDecorator = new BdmAttachmentDecorator()
+        documentDecorator.docRef = resourceDetail.opt('docRef')
+        documentDecorator.dmType = resourceDetail.opt("dmType")
+        documentDecorator.docId = resourceDetail.opt("docId")
+        documentDecorator.indexes = toMap(resourceDetail.opt("indexes"))
+        return  documentDecorator
+    }
+
 
     /** Converts JSONObject to map used by view BDM doc method*/
     private def toMap(org.json.JSONObject indexes){

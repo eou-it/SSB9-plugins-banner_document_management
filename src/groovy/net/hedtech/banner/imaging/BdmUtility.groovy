@@ -108,11 +108,14 @@ class BdmUtility {
     }
 
 
-     public static def getBdmServerConfigurations(){
+     public static def getBdmServerConfigurations(def appName ="" , def dataSource = "" ){
          def bdmServerConfigurations =[:]
          ConfigurationHolder.config.bdmserver.each{key,value->
              bdmServerConfigurations.put(key,value)
          }
+
+         (appName) ? bdmServerConfigurations.put("AppName" ,appName) :""
+         (dataSource) ? bdmServerConfigurations.put("BdmDataSource" ,dataSource) :""
         return bdmServerConfigurations
      }
 

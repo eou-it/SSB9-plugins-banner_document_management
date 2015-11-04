@@ -77,11 +77,12 @@ class BdmAttachmentService extends ServiceBase {
     }
 
 
-    def searchDocument(Map params, List queryCriterias, String vpdiCode ) throws BdmsException{
+    def searchDocument(Map params, def queryCriterias, String vpdiCode ) throws BdmsException{
         try {
             def bdm = new BDMManager();
             JSONObject bdmParams = new JSONObject(params)
-            bdm.searchDocuments(bdmParams, queryCriterias, vpdiCode);
+
+            (queryCriterias instanceof List) ? bdm.searchDocuments(bdmParams, queryCriterias, vpdiCode) : bdm.getDocumentByRef(bdmParams,queryCriterias,vpdiCode)
         } catch (BdmsException bdme) {
             log.error("ERROR: Error while searching  BDM documents",bdme)
 
