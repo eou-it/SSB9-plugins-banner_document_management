@@ -196,11 +196,9 @@ class BdmCompositeAttachmentService {
             decorators << decorator[0]
 
             dir = fileRefPath.split("/");
-
             FileUtils.deleteDirectory(new File(tempPath, dir[0]));
-
-            decorators[0]
         }
+        decorators[0]
     }
 
     //TODO: Need to update
@@ -228,9 +226,9 @@ class BdmCompositeAttachmentService {
     }
 
     /**
-    * Update the particular record and
+     * Update the particular record and
      * return the index details of the record
-    * */
+     * */
     def update(Map params)throws ApplicationException{
         log.debug("Updating BDM document with details ::" + params)
 
@@ -250,7 +248,7 @@ class BdmCompositeAttachmentService {
 
     private def containsInValidVPDICode(def params){
         //Some times Vpdi code is received as "null" , so this line of code is added
-       return  (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")
+        return  (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")
     }
 
 }
