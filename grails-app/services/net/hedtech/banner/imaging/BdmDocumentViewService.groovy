@@ -13,16 +13,23 @@ import org.json.JSONObject
 
 import javax.xml.ws.WebServiceException
 
+
+/**
+ * The Service helps create a file in temp path .
+ * Mainly used by Restful plugin to support create operation
+ * */
 class BdmDocumentViewService {
 
-    private static final Logger log = Logger.getLogger(getClass())
-
+    /**
+     * Upload a file to temp location in BDM serice.
+     * @params params
+     * */
     def create(Map params) {
         log.debug("requestParams: ${params}")
 
-        def BdmDocumentViewDecorator returnedInfo = new BdmDocumentViewDecorator()
-        def String vpdiCode = params?.vpdiCode
-        def String docRef = params?.docRef;
+        def returnedInfo = new BdmDocumentViewDecorator()
+        def vpdiCode = params?.vpdiCode
+        def docRef = params?.docRef;
 
         try {
             returnedInfo.uri = createDocumentViewUri(docRef, vpdiCode);
@@ -34,30 +41,27 @@ class BdmDocumentViewService {
         }
 
         log.debug("reponse: ${returnedInfo}")
-        return returnedInfo
+        returnedInfo
     }
 
-    def createDocumentViewUri(String docRef, String vpdiCode ) throws BdmsException {
+    private def createDocumentViewUri(String docRef, String vpdiCode ) throws BdmsException {
         log.debug("createDocumentViewUri: docRef=${docRef} vpdiCode= ${vpdiCode}")
 
         def Map bdmServerConfig = BdmUtility.getBdmServerConfigurations()
 
         try {
             def bdm = new BDMManager();
-            def decodedDocRef = docRef;
-            if (!docRef.contains('/'))
-                decodedDocRef = new String(docRef.decodeBase64());
+            def decodedDocRef = (!docRef.contains('/')) ?  new String(docRef.decodeBase64()):docRef
             log.debug("decodedDocRef= $decodedDocRef");
 
             JSONObject bdmParams = new JSONObject(bdmServerConfig)
-            String uri = bdm.createViewDocumentUrl(bdmParams, decodedDocRef, vpdiCode);
-            return uri;
+            bdm.createViewDocumentUrl(bdmParams, decodedDocRef, vpdiCode);
         } catch(BdmsException ex){
-            Log.error ex.stackTrace
-            throw new ApplicationException(BdmDocumentViewService,
-                                            new BusinessLogicValidationException("failure: ${ex}", ["${ex}"]))
+            log.error (ex.getMessage())
+            throw new ApplicationException(BdmDocumentViewService, new BusinessLogicValidationException("failure: ${ex}", ["${ex}"]))
         } catch(Exception ex) {
-            Log.error ex.stackTrace
+           log.error (ex.getMessage())
+            throw new BdmsException( 'BdmAttachmentService', ex )
         }
     }
 }

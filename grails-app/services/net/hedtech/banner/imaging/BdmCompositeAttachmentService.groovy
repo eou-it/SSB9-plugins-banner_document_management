@@ -11,40 +11,46 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
 import org.apache.commons.io.FileUtils;
 
+
+/**
+ * Service class which interacts with bdmAttachmentService
+ * to make CRUD operation in AX .
+ * */
 class BdmCompositeAttachmentService {
 
     def bdmAttachmentService
-    def messageSource
     final String SUPPORTED_OPERATOR = "#OR"
 
     /** Fetch a particular document from Ax server
      *  and wrap the document details(indexes) into
      *  Decorator */
     def get(def encodedDocRef){
-        log.debug("BdmCompositeAttachmentService Show :: Encoded document reference :" + encodedDocRef)
+        log.debug("BdmCompositeAttachmentService Show :: Encoded document reference ::" + encodedDocRef)
 
         def docRefMap = getConfigDetailsAndDocId(encodedDocRef)
-        log.info("Decoded document reference is :" + docRefMap )
+        def bdmConfigurations = BdmUtility.getBdmServerConfigurations(docRefMap[1] , docRefMap[0])
+        def documentDecorator =  getDocumentDecorator(bdmAttachmentService.searchDocument(bdmConfigurations, new String(encodedDocRef.decodeBase64()), null))
 
-        def bdmConfigurations = BdmUtility.getBdmServerConfigurations(docRefMap.dmType , docRefMap.BdmDataSource)
+        log.debug("BdmCompositeAttachmentService Show :: Response Details ::" + documentDecorator)
 
-        return getDocumentDecorator(bdmAttachmentService.searchDocument(bdmConfigurations, new String(encodedDocRef.decodeBase64()), null))
+        documentDecorator
     }
 
 
     private def getConfigDetailsAndDocId(def encodedData){
-        def configDetails =[:]
+
         byte[] decoded = encodedData.decodeBase64()
-        def decodedData= new String(decoded).split("/")
+        def decodedDocRef= new String(decoded)
+
+        log.info("Decoded document reference is ::" + decodedDocRef )
+
+        def decodedData = decodedDocRef.split("/")
         if(decodedData.length != 3 ){
-            log.error("Invalid document reference in the reference :: "+new String(decoded))
+            log.error("Invalid document reference in the decoded doc ref , Decoded doc ref :: "+new String(decoded))
             throw new ApplicationException("BDM-Documents :Invalid document reference", new BusinessLogicValidationException("", []))
         }
 
-        configDetails.put("dmType", decodedData[1])
-        configDetails.put("BdmDataSource" ,decodedData[0])
-
-        return configDetails
+        decodedData
     }
 
 
@@ -54,19 +60,20 @@ class BdmCompositeAttachmentService {
     def list(Map params){
         log.debug("Getting list of BDM documents :" + params)
 
-        String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")?null:params?.vpdiCode
-        Map bdmServerConfigurations =validateAndGetBdmServerConfigurations(params)
 
+        String vpdiCode = containsInValidVPDICode(params)?null:params?.vpdiCode
+        Map bdmServerConfigurations =validateAndGetBdmServerConfigurations(params)
+        boolean isPostOperation =  RestfulApiValidationUtility.isQApiRequest(params)
         def criteriaList = []
 
-        boolean isPostOperation =  RestfulApiValidationUtility.isQApiRequest(params)
         if(isPostOperation){
             getListOfCriteria(criteriaList,params)
             log.debug("Post operations criteria  :" + criteriaList)
         }
-
         def decorators = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, criteriaList, vpdiCode))
-        return new PagedResultArrayList(decorators ,decorators.size())
+
+        log.trace("List of BDM documents details ::" + decorators)
+        new PagedResultArrayList(decorators ,decorators.size())
     }
 
     /**
@@ -75,10 +82,12 @@ class BdmCompositeAttachmentService {
      * */
     private def getBdmAttachementDecorators(List resourceDetails){
         log.debug("GetBdmAttachementDecorators : " + resourceDetails)
+
         def decorators =[]
         resourceDetails.each {org.json.JSONObject resourceDetail ->
             decorators << getDocumentDecorator(resourceDetail)
         }
+
         log.debug("Decorator details :" + decorators)
         decorators
     }
@@ -136,26 +145,6 @@ class BdmCompositeAttachmentService {
     }
 
     /**
-     * Parse the urlString and return the docId present in
-     * the url
-     * */
-    private def getDocIdFromUrlString(String urlString){
-        return getMapFromUrlString(urlString).get("DocId")?:""
-    }
-
-    private Map getMapFromUrlString(String urlString){
-        int firstIndex = urlString.indexOf("?");
-        urlString = urlString.substring(firstIndex+1);
-        String[] splitedData = urlString.split("&");
-        def finalMap = [:]
-        splitedData.each{token ->
-            def tokens = token.split("=")
-            finalMap.put(tokens[0],tokens[1])
-        }
-        return finalMap
-    }
-
-    /**
      * Returns number of records return by the list method.
      * Called automatically by RestfulServiceAdapter
      * */
@@ -163,25 +152,24 @@ class BdmCompositeAttachmentService {
         list(params)?.size()
     }
 
-
+    /**
+     * Take the uploaded document from temp path
+     * and push the document with indexes to AX
+     * */
     def create(Map params) {
         log.debug("Creating BDM documents :" + params)
 
-        String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
-
-        Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
-
-        def decorators = uploadDocToAX(params, bdmServerConfigurations, vpdiCode)
+        def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
+        def bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
+        def decorators = createDocumentInAX(params, bdmServerConfigurations, vpdiCode)
 
         log.info("Uploaded file to AX successfully. Response details :" + decorators)
         return decorators
     }
 
 
-
     private def validateAndGetBdmServerConfigurations(def params){
-        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
-        bdmServerConfigurations.put("AppName", params?.dmType)
+        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType,params?.BdmDataSource)
 
         if (!bdmServerConfigurations.get("AppName")) {
             throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
@@ -189,16 +177,15 @@ class BdmCompositeAttachmentService {
         return bdmServerConfigurations
     }
 
-
-
-
-
-    //TODO : DO JSON validation
-    private def uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode){
+    /**
+     * Take the uploaded document from temp path
+     * and push the document with indexes to AX
+     * */
+    private def createDocumentInAX(params ,bdmServerConfigurations ,vpdiCode){
         def decorators = []
         def dir = ""
         def tempPath = ConfigurationHolder.config.bdmserver.file.location
-        params.get('fileRefs')?.each { String fileRefPath ->
+        params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as if now
             File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists() ) {
                 throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.fileRef.request", [fileRefPath]))
@@ -209,11 +196,11 @@ class BdmCompositeAttachmentService {
             decorators << decorator[0]
 
             dir = fileRefPath.split("/");
+
+            FileUtils.deleteDirectory(new File(tempPath, dir[0]));
+
+            decorators[0]
         }
-
-        FileUtils.deleteDirectory(new File(tempPath, dir[0]));
-
-        return decorators[0]
     }
 
     //TODO: Need to update
@@ -221,7 +208,7 @@ class BdmCompositeAttachmentService {
         String vpdiCode = params?.vpdiCode
         Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
         if(!(params.id)){
-            def criteria =(isQueryWithAttributes(params))?addCriteria([:] ,params) :getDocIds(params)
+            def criteria =( params.containsKey("indexes"))?addCriteria([:] ,params) :getDocIds(params)
 
             if(!criteria){
                 throw new ApplicationException("BDM-Documents" , new BusinessLogicValidationException("invalid.delete.request", [] ))
@@ -237,42 +224,33 @@ class BdmCompositeAttachmentService {
         def docIds = []
         def temp =   (params.containsKey("docIds") && params.get("docIds") instanceof List)?params.get("docIds") :[]
         temp.each{docId-> docIds << docId } //Casting becuase params.get returns org.codehaus.groovy.grails.web.json.JSONArray
-        return docIds
+        docIds
     }
 
-    private boolean isQueryWithAttributes(Map params){
-        params.containsKey("indexes")
-    }
-
-    private  boolean isQApiWithDelete(Map params) {
-        boolean qapiReq = false
-        if (params && params.action) {
-            if (params.action["POST"] == "delete") {
-                qapiReq = true
-            }
-        }
-        return qapiReq
-    }
-
+    /**
+    * Update the particular record and
+     * return the index details of the record
+    * */
     def update(Map params)throws ApplicationException{
-
-        def infoMap = [:]
+        log.debug("Updating BDM document with details ::" + params)
 
         def docRef = params.docRef;
-        if (!docRef.contains('/'))
-            docRef = new String(docRef.decodeBase64());
-        log.debug("decoded docRef= $docRef");
+        docRef = (!docRef.contains('/')) ? new String(docRef.decodeBase64()): docRef
 
-        String vpdiCode = (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null") ? null : params?.vpdiCode
+        log.info("decoded docRef= $docRef")
 
-        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
-        bdmServerConfigurations.put("AppName", params.dmType)
-
+        def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
+        def bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
         bdmAttachmentService.updateDocument(bdmServerConfigurations, docRef, params.indexes, vpdiCode)
+        def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
 
-        infoMap.put("status","Success")
-        infoMap.put("message","Document updated successfully!")
-
-        infoMap
+        log.debug("BDM document after updated :: "+ decorator)
+        decorator
     }
+
+    private def containsInValidVPDICode(def params){
+        //Some times Vpdi code is received as "null" , so this line of code is added
+       return  (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")
+    }
+
 }

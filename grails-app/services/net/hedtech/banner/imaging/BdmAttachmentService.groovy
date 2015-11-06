@@ -14,11 +14,19 @@ import org.json.JSONObject
 
 import javax.xml.ws.WebServiceException
 
+/**
+ * Service class which interacts with the BDM-client jar
+ * to make calls to AX services.
+ * */
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
     private static final Logger log = Logger.getLogger(getClass())
 
+    /**
+     * Place the uploaded file in a temporary location
+     * @param file
+     * */
     def Map createBDMLocation(file)
     {
         def map = [:]
@@ -26,7 +34,6 @@ class BdmAttachmentService extends ServiceBase {
         String fileName
 
         String tempPath =  ConfigurationHolder.config.bdmserver.file.location
-
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
 
@@ -64,19 +71,27 @@ class BdmAttachmentService extends ServiceBase {
         }catch (BdmsException bdme) {
             log.error("ERROR: Error while creating a BDM document",bdme)
 
+            def message = "unknown.exception"
+            def messageArray =[]
+
             if(bdme?.cause?.toString()?.contains("Invalid index")){
-                throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("invalid.index.value", [bdme?.cause?.message]))
+                message = "invalid.index.value"
+                messageArray = [bdme?.cause?.message]
             }else if(bdme?.cause?.toString()?.contains("A unique key violation has occured")){
-                throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
+                message = "Invalid.Unique.Constraint"
             }
             throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("unknown.exception", []))
+                    new BusinessLogicValidationException(message, messageArray))
         }
 
     }
 
-
+    /**
+     * Search documents/document based on query criteria .
+     * @param queryCriterias  can be a list or string
+     * @param params
+     * @param vpdiCode
+     * */
     def searchDocument(Map params, def queryCriterias, String vpdiCode ) throws BdmsException{
         try {
             def bdm = new BDMManager();
@@ -86,12 +101,8 @@ class BdmAttachmentService extends ServiceBase {
         } catch (BdmsException bdme) {
             log.error("ERROR: Error while searching  BDM documents",bdme)
 
-            if(bdme.getCause()?.toString()?.contains("Invalid index value")){
-                throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("default.invalid.type.exception", []))
-            }
-            throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
+            def message  =(bdme.getCause()?.toString()?.contains("Invalid index value")) ?"default.invalid.type.exception":"default.BdmAttachmentService"
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException(message, []))
         }
         catch(WebServiceException e){
             log.error('BdmAttachmentService',e)
@@ -99,29 +110,12 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-
-    def viewDocument(Map params, Map criteria, String vpdiCode ) throws BdmsException{
-        try {
-            def bdm = new BDMManager();
-            JSONObject bdmParams = new JSONObject(params)
-            JSONObject queryCriteria = new JSONObject(criteria)
-            bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
-        } catch (BdmsException bdme) {
-            log.error("ERROR: Error while viewing  BDM documents",bdme)
-
-            if(bdme.getCause()?.toString()?.contains("Invalid index value")){
-                throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("default.invalid.type.exception", []))
-            }
-            throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
-        }
-        catch(WebServiceException e){
-            log.error('BdmAttachmentService',e)
-            throw new BdmsException( 'BdmAttachmentService', e )
-        }
-    }
-
+    /**
+     *Delete a document based on docIds .
+     *  @param params
+     *  @params docIds
+     *  @param vpdiCode
+     * */
     def deleteDocument(Map params, List docIds, String vpdiCode ) throws BdmsException{
 
         def bdm = new BDMManager();
@@ -141,15 +135,14 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def listDocuments(Map params, Map criteria, String vpdiCode ) throws BdmsException{
 
-        def bdm = new BDMManager();
-        JSONObject bdmParams = new JSONObject(params)
-        JSONObject queryCriteria = new JSONObject(criteria)
-
-        bdm.getDocuments(bdmParams, queryCriteria, vpdiCode);
-    }
-
+    /**
+     * Update a document indexes based on document reference(docRef) passed.
+     * @param params
+     * @param docRef
+     * @params attribs
+     * @param vpdiCode
+     */
     def updateDocument(Map params, String docRef, Map attribs , String vpdiCode ) throws BdmsException{
 
         def bdm = new BDMManager();
@@ -164,4 +157,5 @@ class BdmAttachmentService extends ServiceBase {
                     new BusinessLogicValidationException("Updating document failed", []))
          }
     }
+
 }
