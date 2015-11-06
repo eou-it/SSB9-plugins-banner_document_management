@@ -9,6 +9,7 @@ import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
+import org.apache.commons.io.FileUtils;
 
 class BdmCompositeAttachmentService {
 
@@ -195,6 +196,7 @@ class BdmCompositeAttachmentService {
     //TODO : DO JSON validation
     private def uploadDocToAX(params ,bdmServerConfigurations ,vpdiCode){
         def decorators = []
+        def dir = ""
         def tempPath = ConfigurationHolder.config.bdmserver.file.location
         params.get('fileRefs')?.each { String fileRefPath ->
             File fileDest = new File(tempPath, fileRefPath)
@@ -205,7 +207,12 @@ class BdmCompositeAttachmentService {
             bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
             def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
             decorators << decorator[0]
+
+            dir = fileRefPath.split("/");
         }
+
+        FileUtils.deleteDirectory(new File(tempPath, dir[0]));
+
         return decorators[0]
     }
 
