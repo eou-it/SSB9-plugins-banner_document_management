@@ -5,7 +5,7 @@ package net.hedtech.banner.imaging
 
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import grails.util.Holders
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
@@ -59,7 +59,7 @@ class BdmUtility {
      * @return
      */
     public static def getConnection(){
-        def sessionFactory = ServletContextHolder.servletContext.
+        def sessionFactory = Holders.servletContext.
                 getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         return sessionFactory.currentSession.connection()
     }
@@ -70,7 +70,7 @@ class BdmUtility {
      * @return
      */
     public static def getDialect(){
-        SessionFactory sessionFactory = ServletContextHolder.servletContext.
+        SessionFactory sessionFactory = Holders.servletContext.
                 getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getDialect();
         return dialect

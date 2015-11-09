@@ -1,7 +1,7 @@
 /*********************************************************************************
  Copyright 2010-2014 Ellucian Company L.P. and its affiliates .
  **********************************************************************************/
-import grails.plugins.springsecurity.SecurityConfigType
+import grails.plugin.springsecurity.SecurityConfigType
 import net.hedtech.banner.configuration.ApplicationConfigurationUtils as ConfigFinder
 
 // ******************************************************************************

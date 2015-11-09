@@ -25,7 +25,7 @@ class BdmUtilityIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testIfBDMExists() {
         def isBDMInstalled = BdmUtility.isBDMInstalled()
-        assertTure ( isBDMInstalled )
+        assertTrue ( isBDMInstalled )
     }
 
 }

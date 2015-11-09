@@ -1,4 +1,4 @@
-grails.project.dependency.resolver = "ivy"
+grails.project.dependency.resolver = "maven"
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
@@ -23,21 +23,14 @@ grails.project.dependency.resolution = {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
         } else {
-            grailsPlugins()
-            grailsHome()
             grailsCentral()
             mavenCentral()
             mavenRepo "http://repository.jboss.org/maven2/"
-            mavenRepo "http://repository.codehaus.org"
         }
     }
 
     plugins {
-        runtime ":hibernate:3.6.10.10"
-        build ":tomcat:7.0.52.1"
         test ':code-coverage:1.2.5'
-        compile ":functional-test:2.0.0"
-        runtime ":webxml:1.4.1"
     }
 
     dependencies {
@@ -47,6 +40,7 @@ grails.project.dependency.resolution = {
         build 'org.antlr:antlr:3.2',
               'com.thoughtworks.xstream:xstream:1.2.1',
               'javassist:javassist:3.8.0.GA'
+        compile 'org.hamcrest:hamcrest-core:1.3'
         runtime "javax.servlet:jstl:1.1.2"
 
         runtime 'org.springframework:spring-test:3.1.0.RELEASE'
