@@ -9,7 +9,8 @@ import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils
+import org.springframework.web.context.request.RequestContextHolder;
 
 
 /**
@@ -25,6 +26,7 @@ class BdmCompositeAttachmentService {
      *  and wrap the document details(indexes) into
      *  Decorator */
     def get(def encodedDocRef){
+
         log.debug("BdmCompositeAttachmentService Show :: Encoded document reference ::" + encodedDocRef)
 
         def docRefMap = getConfigDetailsAndDocId(encodedDocRef)
@@ -60,8 +62,7 @@ class BdmCompositeAttachmentService {
     def list(Map params){
         log.debug("Getting list of BDM documents :" + params)
 
-
-        String vpdiCode = containsInValidVPDICode(params)?null:params?.vpdiCode
+        String vpdiCode = getVpdiCode(params)
         Map bdmServerConfigurations =validateAndGetBdmServerConfigurations(params)
         boolean isPostOperation =  RestfulApiValidationUtility.isQApiRequest(params)
         def criteriaList = []
@@ -159,7 +160,7 @@ class BdmCompositeAttachmentService {
     def create(Map params) {
         log.debug("Creating BDM documents :" + params)
 
-        def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
+        def vpdiCode = getVpdiCode(params)
         def bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
         def decorators = createDocumentInAX(params, bdmServerConfigurations, vpdiCode)
 
@@ -203,7 +204,7 @@ class BdmCompositeAttachmentService {
 
     //TODO: Need to update
     def delete(Map params)throws ApplicationException{
-        String vpdiCode = params?.vpdiCode
+        String vpdiCode = getVpdiCode(params)
         Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
         if(!(params.id)){
             def criteria =( params.containsKey("indexes"))?addCriteria([:] ,params) :getDocIds(params)
@@ -237,10 +238,11 @@ class BdmCompositeAttachmentService {
 
         log.info("decoded docRef= $docRef")
 
-        def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
+        def vpdiCode = getVpdiCode(params)
+
         def bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
         bdmAttachmentService.updateDocument(bdmServerConfigurations, docRef, params.indexes, vpdiCode)
-        def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
+        def decorator =  getDocumentDecorator(bdmAttachmentService.searchDocument(bdmServerConfigurations, docRef, vpdiCode))
 
         log.debug("BDM document after updated :: "+ decorator)
         decorator
@@ -251,4 +253,13 @@ class BdmCompositeAttachmentService {
         return  (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")
     }
 
+    private def getVpdiCode(params) {
+        def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
+
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        def mepCode = session?.getAttribute("mep")
+        //return mepCode;
+
+        return vpdiCode
+    }
 }
