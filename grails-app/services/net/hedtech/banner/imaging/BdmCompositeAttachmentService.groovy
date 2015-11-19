@@ -7,11 +7,10 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.restfulapi.PagedResultArrayList
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
-import org.apache.commons.io.FileUtils
-import org.springframework.web.context.request.RequestContextHolder;
-
 
 /**
  * Service class which interacts with bdmAttachmentService
@@ -41,15 +40,16 @@ class BdmCompositeAttachmentService {
 
     private def getConfigDetailsAndDocId(def encodedData){
 
+        validateEncodedData(encodedData)
         byte[] decoded = encodedData.decodeBase64()
         def decodedDocRef= new String(decoded)
 
         log.info("Decoded document reference is ::" + decodedDocRef )
 
-        def decodedData = decodedDocRef.split("/")
+        def decodedData= decodedDocRef.split("/")
         if(decodedData.length != 3 ){
             log.error("Invalid document reference in the decoded doc ref , Decoded doc ref :: "+new String(decoded))
-            throw new ApplicationException("BDM-Documents :Invalid document reference", new BusinessLogicValidationException("", []))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", [encodedData]))
         }
 
         decodedData
@@ -85,7 +85,7 @@ class BdmCompositeAttachmentService {
         log.debug("GetBdmAttachementDecorators : " + resourceDetails)
 
         def decorators =[]
-        resourceDetails.each {org.json.JSONObject resourceDetail ->
+        resourceDetails?.each {org.json.JSONObject resourceDetail ->
             decorators << getDocumentDecorator(resourceDetail)
         }
 
@@ -120,14 +120,19 @@ class BdmCompositeAttachmentService {
      * */
     private  def getListOfCriteria(List criterias ,Map params){
         Map indexes = params.get("indexes")
-        if(indexes?.containsKey(SUPPORTED_OPERATOR)){
-            org.json.JSONArray  indexValues = indexes.get(SUPPORTED_OPERATOR)
-            def indexLength = indexValues.length()
-            (0..(indexLength-1)).each { length ->
-                criterias <<  new org.json.JSONObject(indexValues.opt(length))
+        try{
+            if(indexes?.containsKey(SUPPORTED_OPERATOR)){
+                org.json.JSONArray  indexValues = indexes.get(SUPPORTED_OPERATOR)
+                def indexLength = indexValues.length()
+                (0..(indexLength-1)).each { length ->
+                    criterias <<  new org.json.JSONObject(indexValues.opt(length))
+                }
+            }else{
+                criterias << new org.json.JSONObject(indexes)
             }
-        }else{
-            criterias << new org.json.JSONObject(indexes)
+        }catch(e){
+            log.error "Error in input data",e
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Value", []))
         }
         criterias
     }
@@ -170,11 +175,13 @@ class BdmCompositeAttachmentService {
 
 
     private def validateAndGetBdmServerConfigurations(def params){
+
+        if (!params?.dmType) {
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", []))
+        }
+
         Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType,params?.BdmDataSource)
 
-        if (!bdmServerConfigurations.get("AppName")) {
-            throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.appName.request", []))
-        }
         return bdmServerConfigurations
     }
 
@@ -189,28 +196,43 @@ class BdmCompositeAttachmentService {
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as if now
             File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists() ) {
-                throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("invalid.fileRef.request", [fileRefPath]))
+                throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.FileRef.Request", [fileRefPath]))
             }
 
             bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
             def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
             decorators << decorator[0]
 
-            dir = fileRefPath.split("/");
-            FileUtils.deleteDirectory(new File(tempPath, dir[0]));
+            deleteDirectory(tempPath ,fileRefPath)
         }
         decorators[0]
+    }
+
+
+    /**
+     * Delete the file once the file is uploaded to AX server
+     * @param tempPath
+     * @param fileRefPath
+     * */
+    private def deleteDirectory(tempPath, fileRefPath){
+        try{
+            def dir = fileRefPath.split("/");
+            FileUtils.deleteDirectory(new File(tempPath,dir[0]));
+        }catch(Exception e){
+            //Since file uploading is success but deleting file is throwing exception , just log the exception and pass throw
+            log.error("Error deleting the file but upload is success !!" , e)
+        }
     }
 
     //TODO: Need to update
     def delete(Map params)throws ApplicationException{
         String vpdiCode = getVpdiCode(params)
-        Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations()
+        Map bdmServerConfigurations =BdmUtility.getBdmServerConfigurations(params?.dmType)
         if(!(params.id)){
             def criteria =( params.containsKey("indexes"))?addCriteria([:] ,params) :getDocIds(params)
 
             if(!criteria){
-                throw new ApplicationException("BDM-Documents" , new BusinessLogicValidationException("invalid.delete.request", [] ))
+                throw new ApplicationException("BDM-Documents" , new BusinessLogicValidationException("Invalid.Delete.Request", [] ))
             }
             bdmAttachmentService.deleteDocument(bdmServerConfigurations,criteria ,vpdiCode)
 
@@ -233,8 +255,9 @@ class BdmCompositeAttachmentService {
     def update(Map params)throws ApplicationException{
         log.debug("Updating BDM document with details ::" + params)
 
-        def docRef = params.docRef;
-        docRef = (!docRef.contains('/')) ? new String(docRef.decodeBase64()): docRef
+
+        validateEncodedData(params.docRef)
+        def docRef = new String(params.docRef.decodeBase64())
 
         log.info("decoded docRef= $docRef")
 
@@ -248,6 +271,17 @@ class BdmCompositeAttachmentService {
         decorator
     }
 
+
+    private def validateEncodedData(String encodedData){
+
+        def isEncodedData = Base64.isArrayByteBase64(encodedData.getBytes()?:"");
+        if(!isEncodedData) {
+            log.error "Invalid encoded document reference ", e
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", [encodedData]))
+        }
+    }
+
     private def containsInValidVPDICode(def params){
         //Some times Vpdi code is received as "null" , so this line of code is added
         return  (params?.vpdiCode == null || params?.vpdiCode == "" || params?.vpdiCode == "null")
@@ -256,8 +290,8 @@ class BdmCompositeAttachmentService {
     private def getVpdiCode(params) {
         def vpdiCode = containsInValidVPDICode(params) ? null : params?.vpdiCode
 
-        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-        def mepCode = session?.getAttribute("mep")
+        // def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        //def mepCode = session?.getAttribute("mep")
         //return mepCode;
 
         return vpdiCode

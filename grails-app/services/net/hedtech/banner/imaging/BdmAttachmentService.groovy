@@ -5,15 +5,16 @@ package net.hedtech.banner.imaging
 
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import net.hedtech.banner.exceptions.NotFoundException
 import net.hedtech.banner.service.ServiceBase
+import net.hedtech.bdm.exception.BdmDocNotFoundException
+import net.hedtech.bdm.exception.BdmInvalidAppNameException
 import net.hedtech.bdm.exception.BdmInvalidIndexNameException
+import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
-import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.json.JSONObject
-
-import javax.xml.ws.WebServiceException
 
 /**
  * Service class which interacts with the BDM-client jar
@@ -22,7 +23,7 @@ import javax.xml.ws.WebServiceException
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
-    private static final Logger log = Logger.getLogger(getClass())
+
 
     /**
      * Place the uploaded file in a temporary location
@@ -70,21 +71,19 @@ class BdmAttachmentService extends ServiceBase {
             bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
         } catch (BdmInvalidIndexNameException e) {
             log.error("ERROR: Invalid index names in search request", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("invalid.index.name.request", [e.getMessage()]))
-        } catch (BdmsException e) {
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.getMessage()]))
+        }catch(BdmInvalidAppNameException e){
+            log.error("ERROR: Invalid App names in search request", e)
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", []))
+        }catch(BdmUniqueKeyViolationException e){
+            log.error("ERROR: Invalid indexe values in the request", e)
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
+        }catch (Exception e) {
             log.error("ERROR: Error while creating a BDM document", e)
-
-            def message = "unknown.exception"
-            def messageArray = []
-
-            if (e?.cause?.toString()?.contains("unique key violation")){
-                message = "invalid.unique.constraint"
-            } else {
-                message = "bdm.service.exception"
-                messageArray = [e.getCause()]
-            }
-
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException(message, messageArray))
+            throw new ApplicationException(BdmAttachmentService,BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception" , null )  ,e)
         }
 
     }
@@ -101,16 +100,21 @@ class BdmAttachmentService extends ServiceBase {
             JSONObject bdmParams = new JSONObject(params)
 
             (queryCriterias instanceof List) ? bdm.searchDocuments(bdmParams, queryCriterias, vpdiCode) : bdm.getDocumentByRef(bdmParams, queryCriterias, vpdiCode)
-        } catch (BdmInvalidIndexNameException e) {
+        }catch (BdmInvalidIndexNameException e) {
             log.error("ERROR: Invalid index names in search request", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("invalid.index.name.request", [e.getMessage()]))
-        } catch (BdmsException e) {
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.getMessage()]))
+        }catch(BdmInvalidAppNameException e){
+            log.error("ERROR: Invalid App names in search request", e)
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", []))
+        }catch (BdmDocNotFoundException e) {
             log.error("ERROR: Error while searching  BDM documents", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("bdm.service.exception", [e.getCause() ]))
-        }
-        catch(WebServiceException e){
-            log.error('BdmAttachmentService',e)
-            throw new BdmsException( 'BdmAttachmentService', e )
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Unknown.DocRef.Request",[]))
+        }catch (Exception e) {
+            log.error("ERROR: Error while creating a BDM document", e)
+            throw new ApplicationException(BdmAttachmentService,BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception" , null )  ,e)
         }
     }
 
@@ -119,23 +123,28 @@ class BdmAttachmentService extends ServiceBase {
      *  @param params
      *  @params docIds
      *  @param vpdiCode
-     * */
-    def deleteDocument(Map params, List docIds, String vpdiCode ) throws BdmsException{
+     *
+     */
+     //TODO: Remove login in last catch block if BDM jar code is corrected
+    def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{
 
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
 
             bdm.deleteDocument(bdmParams, docIds, vpdiCode);
-        } catch (BdmsException bdme) {
+        } catch (BdmInvalidIndexNameException e) {
+            log.error("ERROR: Invalid index names in delet request", e)
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.getMessage()]))
+        }catch (BdmsException bdme) {
             log.error("ERROR: Error while deleting  BDM documents",bdme)
 
+            //TODO: Remove the below if logic
             if(bdme.getCause()?.toString()?.contains("Invalid index value")){
-                throw new ApplicationException(BdmAttachmentService,
-                        new BusinessLogicValidationException("default.invalid.type.exception", []))
+                throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", []))
             }
-            throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("default.BdmAttachmentService", []))
+            throw new ApplicationException(BdmAttachmentService,BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception" , null )  ,bdme)
         }
     }
 
@@ -155,15 +164,14 @@ class BdmAttachmentService extends ServiceBase {
 
         try{
             bdm.updateDocument(bdmParams, docRef, updtIndexes, vpdiCode)
-        } catch (BdmInvalidIndexNameException e) {
-            log.error("ERROR: Invalid index names in search request", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("invalid.index.name.request", [e.getMessage()]))
-        } catch (BdmsException e) {
+        }catch (BdmInvalidIndexNameException e) {
+            log.error("ERROR: Invalid index names in update request", e)
+
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.getMessage()]))
+        }catch (Exception e) {
             log.error("ERROR: Error while searching  BDM documents", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("bdm.service.exception", [e.getCause() ]))
-        } catch (Exception e){
-            log.error("Failed to update document indexes (${docRef})", e);
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Updating document failed", []))
+
+            throw new ApplicationException(BdmAttachmentService,BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception" , null )  ,e)
         }
     }
 

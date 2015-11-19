@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import grails.util.Holders
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -118,5 +119,11 @@ class BdmUtility {
          (dataSource) ? bdmServerConfigurations.put("BdmDataSource" ,dataSource) :""
         return bdmServerConfigurations
      }
+
+
+    public static def getGenericErrorMessage( def messageKey , def messageArg  ,def locale = Locale.getDefault()){
+        def messageSource =  Holders.grailsApplication.mainContext.getBean 'messageSource'
+        messageSource.getMessage(messageKey,messageArg ,"An unknown document exception occurred. Please contact your administrator.",locale)
+    }
 
 }

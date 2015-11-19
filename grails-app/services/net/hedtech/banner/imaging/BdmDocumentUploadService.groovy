@@ -17,12 +17,16 @@ class BdmDocumentUploadService {
         def file = params.get("file")
 
         if(file==null){
-            throw new ApplicationException(BdmAttachmentService,new BusinessLogicValidationException("invalid.file.empty", []))
+            throw new ApplicationException(BdmAttachmentService,new BusinessLogicValidationException("Empty.File.Upload", []))}
+
+        try{
+            def map = bdmAttachmentService.createBDMLocation(file)
+            infoMap.put("status", messageSource.getMessage("file.upload.success",null,"success",Locale.getDefault()))
+            infoMap.put("message",messageSource.getMessage("file.upload.success.message",null,Locale.getDefault()))
+            infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
+        }catch(ex){
+            throw new ApplicationException(BdmsException ,messageSource.getMessage("file.upload.failure.message","Error!! While placing the file in temporary location",Locale.getDefault()),ex)
         }
-        def map = bdmAttachmentService.createBDMLocation(file)
-        infoMap.put("status", messageSource.getMessage("file.upload.success",null,"success",Locale.getDefault()))
-        infoMap.put("message",messageSource.getMessage("file.upload.success.message",null,Locale.getDefault()))
-        infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
 
         log.info("Created file successfully. Response details :" + infoMap)
         return infoMap
