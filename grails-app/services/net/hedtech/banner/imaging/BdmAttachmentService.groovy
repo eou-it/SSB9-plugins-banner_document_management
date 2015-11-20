@@ -72,13 +72,13 @@ class BdmAttachmentService extends ServiceBase {
         } catch (BdmInvalidIndexNameException e) {
             log.error("ERROR: Invalid index names in search request", e)
 
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.getMessage()]))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.message]))
         }catch(BdmInvalidAppNameException e){
             log.error("ERROR: Invalid App names in search request", e)
 
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", []))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", [e.message]))
         }catch(BdmUniqueKeyViolationException e){
-            log.error("ERROR: Invalid indexe values in the request", e)
+            log.error("ERROR: Unique Key Violation", e)
 
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
         }catch (Exception e) {
@@ -107,7 +107,7 @@ class BdmAttachmentService extends ServiceBase {
         }catch(BdmInvalidAppNameException e){
             log.error("ERROR: Invalid App names in search request", e)
 
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", []))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", [e.message]))
         }catch (BdmDocNotFoundException e) {
             log.error("ERROR: Error while searching  BDM documents", e)
 
