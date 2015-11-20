@@ -234,7 +234,7 @@ class BdmCompositeAttachmentService {
             if(!criteria){
                 throw new ApplicationException("BDM-Documents" , new BusinessLogicValidationException("Invalid.Delete.Request", [] ))
             }
-            bdmAttachmentService.deleteDocument(bdmServerConfigurations,criteria, vpdiCode)
+            bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
 
         }else if(params.id){
             bdmAttachmentService.deleteDocument(bdmServerConfigurations,[params.id], vpdiCode)
