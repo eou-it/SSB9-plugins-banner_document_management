@@ -10,9 +10,8 @@ import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.FileUtils
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.json.JSONObject
-import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Service class which interacts with bdmAttachmentService
@@ -192,7 +191,7 @@ class BdmCompositeAttachmentService {
     private def createDocumentInAX(params, bdmServerConfigurations, vpdiCode){
         def decorators = []
         def dir = ""
-        def tempPath = ConfigurationHolder.config.bdmserver.file.location
+        def tempPath = Holders.config.bdmserver.file.location
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as if now
             File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists() ) {

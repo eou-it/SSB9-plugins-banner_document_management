@@ -19,7 +19,7 @@ import net.hedtech.bdm.exception.BdmMismatchDataSourceNameException
 import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.json.JSONObject
 
 /**
@@ -41,7 +41,7 @@ class BdmAttachmentService extends ServiceBase {
         File fileDest
         String fileName
 
-        String tempPath =  ConfigurationHolder.config.bdmserver.file.location
+        String tempPath =  Holders.config.bdmserver.file.location
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
 

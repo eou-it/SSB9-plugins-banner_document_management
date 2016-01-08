@@ -12,7 +12,6 @@ import net.hedtech.bdm.exception.BdmInvalidMepDataSourceNameException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import org.json.JSONObject
-import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * The Service helps create a file in temp path .
