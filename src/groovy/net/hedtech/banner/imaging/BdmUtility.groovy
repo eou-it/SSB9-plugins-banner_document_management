@@ -62,6 +62,8 @@ class BdmUtility {
 
 
     public static boolean isBDMInstalled(){
+        if(!Holders.config.bdm.enabled)
+            return false
         def sql
         try {
             sql = new Sql( getConnection())
