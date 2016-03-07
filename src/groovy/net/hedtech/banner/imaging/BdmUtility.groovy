@@ -8,6 +8,8 @@ import groovy.sql.Sql
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.exceptions.BusinessLogicValidationException
 
 import java.sql.SQLException
 
@@ -81,6 +83,15 @@ class BdmUtility {
         return false
     }
 
-
+    /**
+     *
+     * @return
+     */
+    public static boolean checkBDMInstallation(){
+        if(!Holders.config.bdmInstalled){
+            throw new ApplicationException(BdmUtility,
+                    new BusinessLogicValidationException("bdm.not.installed", []))
+        }
+    }
 
 }
