@@ -1,5 +1,5 @@
 /** *******************************************************************************
- Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
  ********************************************************************************* */
 
 
@@ -21,7 +21,7 @@ class BannerDocumentManagementGrailsPlugin {
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus.
     //
-    String version = "0.0.1"
+    String version = "1.0.1"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.3.7 > *"
