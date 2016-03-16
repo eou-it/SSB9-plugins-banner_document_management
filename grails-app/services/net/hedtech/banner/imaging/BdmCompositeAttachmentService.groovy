@@ -189,22 +189,23 @@ class BdmCompositeAttachmentService {
      * and push the document with indexes to AX
      * */
     private def createDocumentInAX(params, bdmServerConfigurations, vpdiCode){
-        def decorators = []
         def dir = ""
         def tempPath = Holders.config.bdmserver.file.location
+        def documentDecorator
+
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as if now
             File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists() ) {
                 throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.FileRef.Request", [fileRefPath]))
             }
 
-            bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
-            def decorator = getBdmAttachementDecorators(bdmAttachmentService.searchDocument(bdmServerConfigurations, [new JSONObject(params.indexes)], vpdiCode))
-            decorators << decorator[0]
+            def docRef = bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
+            documentDecorator =  getDocumentDecorator(bdmAttachmentService.searchDocument(bdmServerConfigurations, docRef, vpdiCode))
 
+            // clean up temporary file
             deleteDirectory(tempPath ,fileRefPath)
         }
-        decorators[0]
+        documentDecorator
     }
 
 

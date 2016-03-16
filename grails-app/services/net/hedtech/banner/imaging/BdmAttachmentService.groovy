@@ -74,7 +74,8 @@ class BdmAttachmentService extends ServiceBase {
             def bdm = new BDMManager();
             JSONObject docAttributes = new JSONObject(attribs)
             JSONObject bdmParams = new JSONObject(params)
-            bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
+            String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
+            return docRef;
         } catch(Exception e){
             throwAppropriateException(e)
         }
