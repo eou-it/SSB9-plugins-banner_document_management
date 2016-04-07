@@ -20,7 +20,7 @@ grails.config.locations = [] // leave this initialized to an empty list, and add
 // in the APPLICATION CONFIGURATION section below.
 def locationAdder = ConfigFinder.&addLocation.curry(grails.config.locations)
 
-[bannerGrailsAppConfig: "${userHome}/.grails/banner_configuration.groovy",
+[BANNER_APP_CONFIG:                      "banner_configuration.groovy",
 ].each { envName, defaultFileName -> locationAdder(envName, defaultFileName) }
 
 grails.databinding.useSpringBinder=true
