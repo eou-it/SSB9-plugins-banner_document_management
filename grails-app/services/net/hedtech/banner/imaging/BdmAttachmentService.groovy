@@ -43,7 +43,7 @@ class BdmAttachmentService extends ServiceBase {
 
         String tempPath =  Holders.config.bdmserver.file.location
         fileName = file.getOriginalFilename()
-		fileName=  DatatypeConverter.printBase64Binary(fileName.getBytes())
+		fileName=  DatatypeConverter.printBase64Binary(fileName.getBytes()) // encoding the temporary file location 
         String hashedName = java.util.UUID.randomUUID().toString()
 
         File userDir = new File(tempPath, hashedName)
