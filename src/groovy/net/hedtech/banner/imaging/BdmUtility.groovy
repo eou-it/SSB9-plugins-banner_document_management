@@ -13,6 +13,7 @@ import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
 import org.springframework.web.context.request.RequestContextHolder
 
+import javax.sql.DataSource
 import java.sql.SQLException
 
 class BdmUtility {
@@ -112,9 +113,12 @@ class BdmUtility {
          Holders.config.bdmserver.each{key,value->
              bdmServerConfigurations.put(key,value)
          }
-
+         println("bdmserver before="+bdmServerConfigurations)
          (appName) ? bdmServerConfigurations.put("AppName" ,appName) :""
          (dataSource) ? bdmServerConfigurations.put("BdmDataSource" ,dataSource) :""
+         if(bdmServerConfigurations.get('DataSource')!=bdmServerConfigurations.get('BdmDataSource')){
+             bdmServerConfigurations.put('DataSource',bdmServerConfigurations.get('BdmDataSource'))
+         }
 
          return bdmServerConfigurations
      }

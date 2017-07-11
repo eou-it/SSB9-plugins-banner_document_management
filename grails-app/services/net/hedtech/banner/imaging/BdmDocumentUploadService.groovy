@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
@@ -30,13 +30,16 @@ class BdmDocumentUploadService {
             println("Debug file = null")
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Empty.File.Upload", []))
         }
-// better enhancement in error log for file location folder is wrong or folder size is exceeded
+
         try {
           def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))
             infoMap.put("message", messageSource.getMessage("file.upload.success.message", null, Locale.getDefault()))
-            infoMap.put("fileRef", map.get("hashedName") + '/' +map.get('fileName'))
-          } catch (ex) {
+            infoMap.put("fileRef", map.get("hashedName")+'/'+map.get('fileName'))
+
+          }
+        //CR-000149402 temp folder better error log auditing - DM
+        catch (ex) {
                 File F = new File (Holders.config.bdmserver.file.location)
             println("debug ="+ F)
                 if (F.exists()==true){
@@ -44,12 +47,13 @@ class BdmDocumentUploadService {
                     println("debug here = " +usableSpace)
                     if (usableSpace == 0)
                     log.error("Error!! Temporary folder size exceeded", ex)
-
-                }
+                   }
                 else
                     log.error("Error!! Unable to find temporary folder location", ex)
-            throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failure.message", "Error!! While placing the file in temporary location, check log file for more details ", Locale.getDefault()), ex)
-                }
+
+                    throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failure.message", "Error!! While placing the file in temporary location, check log file for more details ", Locale.getDefault()), ex)
+
+        }// end of defect CR-000149402
 
             log.info("Created file successfully. Response details :" + infoMap)
             return infoMap

@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
@@ -20,7 +20,22 @@ import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import grails.util.Holders
+
+//import org.eclipse.aether.repository.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+
+import javax.xml.bind.DatatypeConverter
+import java.io.File
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.json.JSONObject
+
+
+import java.nio.file.FileStore
+import java.nio.file.Path
+import java.text.NumberFormat
+
+import org.springframework.security.core.userdetails.User;
+
 
 /**
  * Service class which interacts with the BDM-client jar
@@ -29,38 +44,34 @@ import org.json.JSONObject
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
-
+    def messageSource
 
     /**
      * Place the uploaded file in a temporary location
      * @param file
      * */
-    def Map createBDMLocation(file)
-    {
+    def Map createBDMLocation(file) {
         def map = [:]
+        def exception = java.io.FileNotFoundException
         File fileDest
         String fileName
-
-        String tempPath =  Holders.config.bdmserver.file.location
+        String tempPath = Holders.config.bdmserver.file.location
         fileName = file.getOriginalFilename()
-		fileName=  DatatypeConverter.printBase64Binary(fileName.getBytes()) // encoding the temporary file location 
         String hashedName = java.util.UUID.randomUUID().toString()
-
         File userDir = new File(tempPath, hashedName)
-        userDir.mkdir()
-
+        boolean b = userDir.mkdir()
         fileDest = new File(userDir, fileName)
         file.transferTo(fileDest)
-
         def absoluteFileName = fileDest.getAbsolutePath()
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
         map.fileName = fileName
-        map.hashedName = hashedName
+        map.hashedName =hashedName
 
         log.debug("BDM temp file details are :" + map)
 
         return map
+
     }
 
     /**
@@ -69,15 +80,16 @@ class BdmAttachmentService extends ServiceBase {
      * @param comment
      * @return
      */
-    def createDocument(Map params, String filename, Map attribs , String vpdiCode ) throws BdmsException{
+    def createDocument(Map params, String filename, Map attribs, String vpdiCode) throws BdmsException {
 
         try {
+
             def bdm = new BDMManager();
             JSONObject docAttributes = new JSONObject(attribs)
             JSONObject bdmParams = new JSONObject(params)
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             return docRef;
-        } catch(Exception e){
+        } catch (Exception e) {
             throwAppropriateException(e)
         }
 
@@ -85,11 +97,11 @@ class BdmAttachmentService extends ServiceBase {
 
     /**
      * Search documents/document based on query criteria .
-     * @param queryCriterias  can be a list or string
+     * @param queryCriterias can be a list or string
      * @param params
      * @param vpdiCode
      * */
-    def searchDocument(Map params, def queryCriterias, String vpdiCode ) throws BdmsException {
+    def searchDocument(Map params, def queryCriterias, String vpdiCode) throws BdmsException {
 
         try {
             def bdm = new BDMManager();
@@ -111,9 +123,8 @@ class BdmAttachmentService extends ServiceBase {
      * @throws BdmsException
      *
      */
-    def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{
-
-        def bdm = new BDMManager();
+   def deleteDocument(Map params, ArrayList docIds, String vpdiCode ) throws BdmsException{
+           def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
 
@@ -131,45 +142,42 @@ class BdmAttachmentService extends ServiceBase {
      * @return
      * @throws BdmsException
      */
-    def deleteDocument(Map params, Map attribs, String vpdiCode) throws BdmsException{
-
-        def bdm = new BDMManager();
-        try {
-            JSONObject bdmParams = new JSONObject(params)
+   def deleteDocument(Map params, Map attribs, String vpdiCode) throws BdmsException {
+         def bdm = new BDMManager();
+         try {
+             JSONObject bdmParams = new JSONObject(params)
             JSONObject docIndexes = new JSONObject(attribs)
-
             bdm.deleteDocument(bdmParams, docIndexes, vpdiCode);
-        } catch (Exception e) {
-            throwAppropriateException(e)
-        }
-    }
+         } catch (Exception e) {
+             throwAppropriateException(e)
+         }
+     }
 
-    def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) throws BdmsException{
+     def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) throws BdmsException {
+           def bdm = new BDMManager();
+         try {
+             JSONObject bdmParams = new JSONObject(params)
+             bdm.deleteDocumentByDocRef(bdmParams, docRef, vpdiCode);
 
-        def bdm = new BDMManager();
-        try {
-            JSONObject bdmParams = new JSONObject(params)
-            bdm.deleteDocumentByDocRef(bdmParams, docRef, vpdiCode);
+         } catch (Exception e) {
+             throwAppropriateException(e)
+         }
+     }
 
-        } catch (Exception e) {
-            throwAppropriateException(e)
-        }
-    }
-
-    /**
-     * Update a document indexes based on document reference(docRef) passed.
-     * @param params
-     * @param docRef
-     * @params attribs
-     * @param vpdiCode
-     */
-    def updateDocument(Map params, String docRef, Map attribs , String vpdiCode ) throws BdmsException{
+     /**
+      * Update a document indexes based on document reference(docRef) passed.
+      * @param params
+      * @param docRef
+      * @params attribs
+      * @param vpdiCode
+      */
+    def updateDocument(Map params, String docRef, Map attribs, String vpdiCode) throws BdmsException {
 
         def bdm = new BDMManager();
         JSONObject updtIndexes = new JSONObject(attribs)
         JSONObject bdmParams = new JSONObject(params)
 
-        try{
+        try {
             bdm.updateDocument(bdmParams, docRef, updtIndexes, vpdiCode)
         } catch (Exception e) {
             throwAppropriateException(e)
@@ -177,34 +185,33 @@ class BdmAttachmentService extends ServiceBase {
     }
 
 
-    private def throwAppropriateException(Exception e){
+    private def throwAppropriateException(Exception e) {
         if (e instanceof BdmInvalidIndexNameException) {
             log.error("ERROR: Invalid index names in search request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.message]))
-        }else if (e instanceof BdmInvalidIndexValueException ) {
+        } else if (e instanceof BdmInvalidIndexValueException) {
             log.error("ERROR: Invalid index value in update request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Value.Request", [e.message]))
-        }else if(e instanceof BdmUniqueKeyViolationException ){
+        } else if (e instanceof BdmUniqueKeyViolationException) {
             log.error("ERROR: Unique Key Violation", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Unique.Constraint", []))
-        }else if(e instanceof BdmInvalidAppNameException ){
+        } else if (e instanceof BdmInvalidAppNameException) {
             log.error("ERROR: Invalid App names in search request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", [e.message]))
-        }else if((e instanceof BdmInvalidDataSourceNameException ) || ((e instanceof BdmMismatchDataSourceNameException) || (e instanceof BdmInvalidMepDataSourceNameException))){
+        } else if ((e instanceof BdmInvalidDataSourceNameException) || ((e instanceof BdmMismatchDataSourceNameException) || (e instanceof BdmInvalidMepDataSourceNameException))) {
             log.error("ERROR: Invalid query value in update request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DataSourceName", [e.message]))
-        } else if (e instanceof BdmDocNotFoundException ) {
+        } else if (e instanceof BdmDocNotFoundException) {
             log.error("ERROR: Error while searching  BDM documents", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Unknown.DocRef.Request",[]))
-        }else if(e instanceof BdmMalformedDocRefException){
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Unknown.DocRef.Request", []))
+        } else if (e instanceof BdmMalformedDocRefException) {
             log.error("ERROR: Error while searching  BDM documents", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data",[]))
-        }else if (e instanceof Exception ) {
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", []))
+        } else if (e instanceof Exception) {
             log.error("ERROR: Error while creating a BDM document", e)
-            throw new ApplicationException(BdmAttachmentService,BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception" , null )  ,e)
+            throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
     }
-
 
 
 }
