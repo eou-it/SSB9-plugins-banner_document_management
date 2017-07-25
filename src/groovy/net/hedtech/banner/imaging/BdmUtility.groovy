@@ -23,7 +23,8 @@ class BdmUtility {
 
     static SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
 
-    static String DECRYPT_SQL = "select gskdecr.decrypt_string(:encryptedStr) from dual"
+    static String DECRYPT_SQL           = "select gskdecr.decrypt_string(:encryptedStr) from dual"
+    static String FETCH_CRYPTO_KEY_SQL   = "select eoksecr.f_get_key() from dual"
 
     /**
      *
@@ -118,5 +119,19 @@ class BdmUtility {
         }
     }
 
+    /**
+     *
+     * @param str
+     * @return
+     */
+    static String fetchBdmCyptoKey(){
+        try{
+        return sessionFactory.getCurrentSession().createSQLQuery(FETCH_CRYPTO_KEY_SQL)
+                    .uniqueResult()
+        }catch(SQLException sqle)
+        {
+            throw ApplicationException(BdmUtility,sqle)
+        }
+    }
 
 }
