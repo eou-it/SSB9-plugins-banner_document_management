@@ -10,6 +10,7 @@ import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import org.hibernate.SessionFactory
 
 import java.sql.SQLException
 
@@ -19,6 +20,10 @@ class BdmUtility {
 
     def static final DEFAULT_MAX_SIZE = 10
     def static final DEFAULT_OFFSET = 0
+
+    static SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
+
+    static String DECRYPT_SQL = "select gskdecr.decrypt_string(:encryptedStr) from dual"
 
     /**
      *
@@ -93,5 +98,25 @@ class BdmUtility {
                     new BusinessLogicValidationException("bdm.not.installed", []))
         }
     }
+
+
+    /**
+    *
+    * @param str
+    * @return
+    */
+    static String decryptString(String encryptedStr ){
+        if (!encryptedStr)
+            throw new ApplicationException(BdmUtility, "@@r1:security.@@MissingValue")
+        try {
+            return sessionFactory.getCurrentSession().createSQLQuery(DECRYPT_SQL)
+                    .setString("encryptedStr", encryptedStr)
+                    .uniqueResult()
+        }catch(SQLException sqle)
+        {
+            throw ApplicationException(BdmUtility,sqle)
+        }
+    }
+
 
 }
