@@ -23,7 +23,7 @@ class BdmUtility {
 
     static SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
 
-    static String DECRYPT_SQL           = "select gskdecr.decrypt_string(:encryptedStr) from dual"
+    static String DECRYPT_SQL           = "select gskdsec.decrypt_string(:encryptedStr) from dual"
     static String FETCH_CRYPTO_KEY_SQL   = "select eoksecr.f_get_key() from dual"
 
     /**
