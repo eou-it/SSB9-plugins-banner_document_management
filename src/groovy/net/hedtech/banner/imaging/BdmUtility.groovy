@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
@@ -12,7 +12,7 @@ import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
 import org.springframework.web.context.request.RequestContextHolder
-
+import groovy.sql.Sql
 import java.sql.SQLException
 
 class BdmUtility {
@@ -29,9 +29,9 @@ class BdmUtility {
      * @param filter
      * @return
      */
-    public static getLikeFormattedFilter(String filter){
+    public static getLikeFormattedFilter(String filter) {
         def filterText
-        if (StringUtils.isBlank( filter )) {
+        if (StringUtils.isBlank(filter)) {
             filterText = "%"
         } else if (!(filter =~ /%/)) {
             filterText = "%" + filter.toUpperCase() + "%"
@@ -48,7 +48,7 @@ class BdmUtility {
      * @param offset
      * @return
      */
-    def static getPagingParams( limit, offset ) {
+    def static getPagingParams(limit, offset) {
         limit = limit ? limit as Integer : DEFAULT_MAX_SIZE
         offset = offset ? offset as Integer : DEFAULT_OFFSET
         return [max: limit, offset: offset * limit]
@@ -58,18 +58,17 @@ class BdmUtility {
      *
      * @return
      */
-    public static def getConnection(){
+    public static def getConnection() {
         def sessionFactory = Holders.servletContext.
                 getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         return sessionFactory.currentSession.connection()
     }
 
-
     /**
      *
      * @return
      */
-    public static def getDialect(){
+    public static def getDialect() {
         SessionFactory sessionFactory = Holders.servletContext.
                 getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getDialect();
@@ -77,9 +76,9 @@ class BdmUtility {
     }
 
 
-    public static boolean checkIfTableExists(String tableName){
+    public static boolean checkIfTableExists(String tableName) {
         try {
-            DatabaseMetadata databaseMetadata=new DatabaseMetadata(getConnection(),getDialect());
+            DatabaseMetadata databaseMetadata = new DatabaseMetadata(getConnection(), getDialect());
             if (databaseMetadata.isTable(tableName)) {
                 log.info("Table " + tableName + " exists");
                 return true;
@@ -87,42 +86,61 @@ class BdmUtility {
 
             log.info("Table " + tableName + " does not exist");
         }
-        catch (  SQLException sqle) {
-              throw sqle
+        catch (SQLException sqle) {
+            throw sqle
         }
         return false;
     }
 
-    public static boolean isBDMInstalled(){
+    public static boolean isBDMInstalled() {
         def flag = false
         def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-        try{
+        try {
             flag = checkIfTableExists(BDM_VERSION_TABLE)
-        } catch(SQLException sqle){
+        } catch (SQLException sqle) {
             flag = false
-        } finally{
+        } finally {
             session["BDM_INSTALLED"] = flag
         }
         return flag
     }
 
 
-     public static def getBdmServerConfigurations(def appName ="" , def dataSource = "" ){
-         def bdmServerConfigurations =[:]
-         Holders.config.bdmserver.each{key,value->
-             bdmServerConfigurations.put(key,value)
-         }
+    public static def getBdmServerConfigurations(def appName = "", def dataSource = "") {
+        def bdmServerConfigurations = [:]
+        Holders.config.bdmserver.each { key, value ->
+            bdmServerConfigurations.put(key, value)
+        }
+        (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
+        (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
+        return getPassword(bdmServerConfigurations)
 
-         (appName) ? bdmServerConfigurations.put("AppName" ,appName) :""
-         (dataSource) ? bdmServerConfigurations.put("BdmDataSource" ,dataSource) :""
+    }
 
-         return bdmServerConfigurations
-     }
-
-
-    public static def getGenericErrorMessage( def messageKey , def messageArg  ,def locale = Locale.getDefault()){
-        def messageSource =  Holders.grailsApplication.mainContext.getBean 'messageSource'
-        messageSource.getMessage(messageKey,messageArg ,"An unknown document exception occurred. Please contact your administrator.",locale)
+    // to get Decrypted passwords defect no. CR-000149894 - DM
+    private static LinkedHashMap getPassword(LinkedHashMap bdmConfig) {
+        SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        def keypassword=null
+        def username=bdmConfig.get("Username")
+        def decryptedPwd = null
+        def res
+        try {
+            //to decrypt the password
+            sql.call("{? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username]) { result -> decryptedPwd = result}
+            //decrypt the Keypassword
+            sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR]) { result -> keypassword = result }
+            bdmConfig.put("KeyPassword", keypassword)
+            bdmConfig.put("Password", decryptedPwd)
+        }
+        finally {
+            sql.close()
+        }
+         return bdmConfig
+    }
+    public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {
+        def messageSource = Holders.grailsApplication.mainContext.getBean 'messageSource'
+        messageSource.getMessage(messageKey, messageArg, "An unknown document exception occurred. Please contact your administrator.", locale)
     }
 
 }
