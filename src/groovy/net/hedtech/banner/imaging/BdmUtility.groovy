@@ -1,37 +1,34 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
 import grails.util.Holders
 import groovy.sql.Sql
-import org.apache.commons.lang.StringUtils
-import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import org.apache.commons.lang.StringUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.hibernate.SessionFactory
 
 import java.sql.SQLException
 
 class BdmUtility {
 
-    private static final Logger log = Logger.getLogger(BdmUtility.class)
-
     def static final DEFAULT_MAX_SIZE = 10
     def static final DEFAULT_OFFSET = 0
 
-    static SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
+    static SessionFactory sessionFactory = Holders.servletContext.getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT ).sessionFactory
 
-    static String DECRYPT_SQL           = "select gskdsec.decrypt_string(:encryptedStr) from dual"
-    static String FETCH_CRYPTO_KEY_SQL   = "select eoksecr.f_get_key() from dual"
+    static String DECRYPT_SQL = "select gskdsec.decrypt_string(:encryptedStr) from dual"
+    static String FETCH_CRYPTO_KEY_SQL = "select eoksecr.f_get_key() from dual"
 
     /**
      *
      * @param filter
      * @return
      */
-    public static getLikeFormattedFilter(String filter){
+    public static getLikeFormattedFilter( String filter ) {
         def filterText
         if (StringUtils.isBlank( filter )) {
             filterText = "%"
@@ -60,23 +57,21 @@ class BdmUtility {
      *
      * @return
      */
-    public static def getConnection(){
+    public static def getConnection() {
         def sessionFactory = Holders.servletContext.
-                getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
+                getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT ).sessionFactory
         return sessionFactory.currentSession.connection()
     }
 
 
-
-
-    public static boolean isBDMInstalled(){
-        if(!Holders.config.bdm.enabled)
+    public static boolean isBDMInstalled() {
+        if (!Holders.config.bdm.enabled)
             return false
         def sql
         try {
-            sql = new Sql( getConnection())
+            sql = new Sql( getConnection() )
             def tableSql = """SELECT count(1) from EURVERS where 1 = 2 """
-            sql.eachRow(tableSql){ }
+            sql.eachRow( tableSql ) {}
             sql?.close()
             return true;
         }
@@ -93,44 +88,41 @@ class BdmUtility {
      *
      * @return
      */
-    public static boolean checkBDMInstallation(){
-        if(!Holders.config.bdmInstalled){
-            throw new ApplicationException(BdmUtility,
-                    new BusinessLogicValidationException("bdm.not.installed", []))
-        }
-    }
-
-
-    /**
-    *
-    * @param str
-    * @return
-    */
-    static String decryptString(String encryptedStr ){
-        if (!encryptedStr)
-            throw new ApplicationException(BdmUtility, "@@r1:security.@@MissingValue")
-        try {
-            return sessionFactory.getCurrentSession().createSQLQuery(DECRYPT_SQL)
-                    .setString("encryptedStr", encryptedStr)
-                    .uniqueResult()
-        }catch(SQLException sqle)
-        {
-            throw ApplicationException(BdmUtility,sqle)
+    public static boolean checkBDMInstallation() {
+        if (!Holders.config.bdmInstalled) {
+            throw new ApplicationException( BdmUtility,
+                                            new BusinessLogicValidationException( "bdm.not.installed", [] ) )
         }
     }
 
     /**
-     *
-     * @param str
+     * Decrypts encrypted String
+     * @param str, The encrypted String
      * @return
      */
-    static String fetchBdmCyptoKey(){
-        try{
-        return sessionFactory.getCurrentSession().createSQLQuery(FETCH_CRYPTO_KEY_SQL)
+    static String decryptString( String encryptedStr ) {
+        if (!encryptedStr) {
+            throw new ApplicationException( BdmUtility, "@@r1:security.@@MissingValue" )
+        }
+        try {
+            sessionFactory.getCurrentSession().createSQLQuery( DECRYPT_SQL )
+                    .setString( "encryptedStr", encryptedStr )
                     .uniqueResult()
-        }catch(SQLException sqle)
-        {
-            throw ApplicationException(BdmUtility,sqle)
+        } catch (SQLException sqle) {
+            throw ApplicationException( BdmUtility, sqle )
+        }
+    }
+
+    /**
+     * Fetches BDM Crypto Key
+     * @return
+     */
+    static String fetchBdmCryptoKey() {
+        try {
+            sessionFactory.getCurrentSession().createSQLQuery( FETCH_CRYPTO_KEY_SQL )
+                    .uniqueResult()
+        } catch (SQLException sqle) {
+            throw ApplicationException( BdmUtility, sqle )
         }
     }
 
