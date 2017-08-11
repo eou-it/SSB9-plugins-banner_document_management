@@ -137,7 +137,7 @@ class BdmUtility {
             sql.close()
         }
          return bdmConfig
-    }
+    }// end of  CR-000149894 - DMs
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {
         def messageSource = Holders.grailsApplication.mainContext.getBean 'messageSource'
         messageSource.getMessage(messageKey, messageArg, "An unknown document exception occurred. Please contact your administrator.", locale)
