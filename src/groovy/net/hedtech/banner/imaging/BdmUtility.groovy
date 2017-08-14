@@ -135,7 +135,7 @@ class BdmUtility {
             //to decrypt the password
             sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
                     { result -> decryptedPwd = result }
-            println("username=" + username + "  Password=" + decryptedPwd)
+         
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
