@@ -108,12 +108,19 @@ class BdmUtility {
 
     public static def getBdmServerConfigurations(def appName = "", def dataSource = "") {
         def bdmServerConfigurations = [:]
-        Holders.config.bdmserver.each { key, value ->
-            bdmServerConfigurations.put(key, value)
+        try {
+            Holders.config.bdmserver.each { key, value ->
+                bdmServerConfigurations.put(key, value)
+            }
+            (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
+            (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
+
+            bdmServerConfigurations = getPassword(bdmServerConfigurations)
         }
-        (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
-        (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-        return getPassword(bdmServerConfigurations)
+        catch (Exception e) {
+            log.error("Please check the config file and also refer the error ", e)
+               }
+        return bdmServerConfigurations
 
     }
 
@@ -121,23 +128,25 @@ class BdmUtility {
     private static LinkedHashMap getPassword(LinkedHashMap bdmConfig) {
         SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         def sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def keypassword=null
-        def username=bdmConfig.get("Username")
+        def keypassword = null
+        def username = bdmConfig.get("Username")
         def decryptedPwd = null
-        def res
         try {
             //to decrypt the password
-            sql.call("{? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username]) { result -> decryptedPwd = result}
+            sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
+                    { result -> decryptedPwd = result }
+            println("username=" + username + "  Password=" + decryptedPwd)
             //decrypt the Keypassword
-            sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR]) { result -> keypassword = result }
+            sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
+                    { result -> keypassword = result }
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
         }
         finally {
             sql.close()
         }
-         return bdmConfig
-    }// end of  CR-000149894 - DMs
+        return bdmConfig
+    } //end of  CR-000149894
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {
         def messageSource = Holders.grailsApplication.mainContext.getBean 'messageSource'
         messageSource.getMessage(messageKey, messageArg, "An unknown document exception occurred. Please contact your administrator.", locale)
