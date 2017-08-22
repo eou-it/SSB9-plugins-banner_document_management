@@ -29,13 +29,14 @@ class BdmAttachmentService extends ServiceBase {
         String hashedName = java.util.UUID.randomUUID().toString()
 
         File userDir = new File(tempPath, hashedName)
+
+        userDir.mkdir()
+        
         if(!userDir?.exists())
         {
             throw new ApplicationException(BdmAttachmentService,
                     new BusinessLogicValidationException("invalid.path.exception", []))
         }
-        userDir.mkdir()
-
         fileDest = new File(userDir, fileName)
         file.transferTo(fileDest)
 
