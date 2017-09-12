@@ -108,13 +108,14 @@ class BdmUtility {
 
     public static def getBdmServerConfigurations(def appName = "", def dataSource = "") {
         def bdmServerConfigurations = [:]
+
         try {
             Holders.config.bdmserver.each { key, value ->
                 bdmServerConfigurations.put(key, value)
             }
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-
+            println("bdmserver1="+bdmServerConfigurations)
             bdmServerConfigurations = getPassword(bdmServerConfigurations)
         }
         catch (Exception e) {

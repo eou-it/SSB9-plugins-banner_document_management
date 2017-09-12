@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.ibm.icu.util.ICUUncheckedIOException
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.exceptions.NotFoundException
@@ -20,6 +22,9 @@ import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import grails.util.Holders
+import org.apache.commons.fileupload.InvalidFileNameException
+import org.omg.CORBA.portable.ApplicationException
+import java.lang.RuntimeException
 
 //import org.eclipse.aether.repository.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -58,10 +63,12 @@ class BdmAttachmentService extends ServiceBase {
         String tempPath = Holders.config.bdmserver.file.location
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
+        checkExtension(fileName,file);
         File userDir = new File(tempPath, hashedName)
         boolean b = userDir.mkdir()
         fileDest = new File(userDir, fileName)
         file.transferTo(fileDest)
+        println ("size="+bytes)
         def absoluteFileName = fileDest.getAbsolutePath()
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
@@ -72,8 +79,24 @@ class BdmAttachmentService extends ServiceBase {
 
         return map
 
+}
+    //This function checks if the file extension and size matches the security rules mentioned in Config file - DM
+def checkExtension(String fileName,file) {
+
+    String [] arr= Holders.config.bdmserver.defaultfile_ext
+
+    for (int i=0; i < arr.length;i++) {
+        if (arr[i].equals(fileName.substring(fileName.length() - 4))) {
+                    throw new RuntimeException("File extension");
+                   }
     }
 
+    def fileSize = (file.getSize())/12000
+    if (fileSize > Holders.config.bdmserver.defaultFileSize ){
+        throw new RuntimeException("File size exceeding");
+    }
+
+}//end of checkExtension
     /**
      * This method is used to create Position Description Comment for a posDescId
      * @param positionDescription
@@ -188,7 +211,7 @@ class BdmAttachmentService extends ServiceBase {
     private def throwAppropriateException(Exception e) {
         if (e instanceof BdmInvalidIndexNameException) {
             log.error("ERROR: Invalid index names in search request", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Name.Request", [e.message]))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.File.Name.Request", [e.message]))
         } else if (e instanceof BdmInvalidIndexValueException) {
             log.error("ERROR: Invalid index value in update request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Value.Request", [e.message]))
