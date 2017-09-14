@@ -68,7 +68,6 @@ class BdmAttachmentService extends ServiceBase {
         boolean b = userDir.mkdir()
         fileDest = new File(userDir, fileName)
         file.transferTo(fileDest)
-        println ("size="+bytes)
         def absoluteFileName = fileDest.getAbsolutePath()
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
@@ -80,7 +79,8 @@ class BdmAttachmentService extends ServiceBase {
         return map
 
 }
-    //This function checks if the file extension and size matches the security rules mentioned in Config file - DM
+    //This function checks if the file extension and size matches the security rules
+    // mentioned in Config file - DM
 def checkExtension(String fileName,file) {
 
     String [] arr= Holders.config.bdmserver.defaultfile_ext

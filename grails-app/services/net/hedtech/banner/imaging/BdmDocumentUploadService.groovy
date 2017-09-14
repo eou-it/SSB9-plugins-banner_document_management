@@ -46,9 +46,8 @@ class BdmDocumentUploadService{
 
 
         catch (UndeclaredThrowableException ex) {
-                      println("in first catch ex="+ex)
+
                 File F = new File (Holders.config.bdmserver.file.location)
-            println("debug ="+ F)
                 if (F.exists()==true){
                    def usableSpace = F.getFreeSpace()
                     println("debug here = " +usableSpace)
@@ -63,10 +62,7 @@ class BdmDocumentUploadService{
         }// end of defect CR-000149402
 
         catch (RuntimeException ex){
-            println("in second catch ex="+ex.getMessage())
-            println("in ex="+ex)
-            //   ex.printStackTrace()
-            if(ex.getMessage().equals("File extension")) {
+             if(ex.getMessage().equals("File extension")) {
                 log.error("File extension is not allowed as per  default configuration files", ex)
                 throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureExtension.message", "Error!! you can not upload a file with this extension", Locale.getDefault()), ex)
             }else if (ex.getMessage().equals("File size exceeding")){
