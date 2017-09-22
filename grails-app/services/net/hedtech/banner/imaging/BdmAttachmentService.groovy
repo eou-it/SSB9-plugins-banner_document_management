@@ -63,7 +63,7 @@ class BdmAttachmentService extends ServiceBase {
         String tempPath = Holders.config.bdmserver.file.location
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
-        checkExtension(fileName,file);
+        checkExtension(fileName, file);
         File userDir = new File(tempPath, hashedName)
         boolean b = userDir.mkdir()
         fileDest = new File(userDir, fileName)
@@ -72,31 +72,33 @@ class BdmAttachmentService extends ServiceBase {
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
         map.fileName = fileName
-        map.hashedName =hashedName
+        map.hashedName = hashedName
 
         log.debug("BDM temp file details are :" + map)
 
         return map
 
-}
+    }
     //This function checks if the file extension and size matches the security rules
     // mentioned in Config file - DM
-def checkExtension(String fileName,file) {
+    def checkExtension(String fileName, file) {
 
-    String [] arr= Holders.config.bdmserver.defaultfile_ext
+        String[] arr = Holders.config.bdmserver.defaultfile_ext
 
-    for (int i=0; i < arr.length;i++) {
-        if (arr[i].equals(fileName.substring(fileName.length() - 4))) {
-                    throw new RuntimeException("File extension");
-                   }
-    }
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].equals(fileName.substring(fileName.length() - 4))) {
+                throw new RuntimeException("File extension");
+            }
+        }
 
-    def fileSize = (file.getSize())/12000
-    if (fileSize > Holders.config.bdmserver.defaultFileSize ){
-        throw new RuntimeException("File size exceeding");
-    }
+        def fileSize = ((file.getSize()) / 1024) / 1024
+        log.error("File size trying to upload is =" + fileSize)
+        def size = Holders.config.bdmserver.defaultFileSize
+        if (fileSize > size) {
+            throw new RuntimeException("File size exceeding");
+        }
 
-}//end of checkExtension
+    }//end of checkExtension
     /**
      * This method is used to create Position Description Comment for a posDescId
      * @param positionDescription
@@ -146,8 +148,8 @@ def checkExtension(String fileName,file) {
      * @throws BdmsException
      *
      */
-   def deleteDocument(Map params, ArrayList docIds, String vpdiCode ) throws BdmsException{
-           def bdm = new BDMManager();
+    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+        def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
 
@@ -165,35 +167,35 @@ def checkExtension(String fileName,file) {
      * @return
      * @throws BdmsException
      */
-   def deleteDocument(Map params, Map attribs, String vpdiCode) throws BdmsException {
-         def bdm = new BDMManager();
-         try {
-             JSONObject bdmParams = new JSONObject(params)
+    def deleteDocument(Map params, Map attribs, String vpdiCode) throws BdmsException {
+        def bdm = new BDMManager();
+        try {
+            JSONObject bdmParams = new JSONObject(params)
             JSONObject docIndexes = new JSONObject(attribs)
             bdm.deleteDocument(bdmParams, docIndexes, vpdiCode);
-         } catch (Exception e) {
-             throwAppropriateException(e)
-         }
-     }
+        } catch (Exception e) {
+            throwAppropriateException(e)
+        }
+    }
 
-     def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) throws BdmsException {
-           def bdm = new BDMManager();
-         try {
-             JSONObject bdmParams = new JSONObject(params)
-             bdm.deleteDocumentByDocRef(bdmParams, docRef, vpdiCode);
+    def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) throws BdmsException {
+        def bdm = new BDMManager();
+        try {
+            JSONObject bdmParams = new JSONObject(params)
+            bdm.deleteDocumentByDocRef(bdmParams, docRef, vpdiCode);
 
-         } catch (Exception e) {
-             throwAppropriateException(e)
-         }
-     }
+        } catch (Exception e) {
+            throwAppropriateException(e)
+        }
+    }
 
-     /**
-      * Update a document indexes based on document reference(docRef) passed.
-      * @param params
-      * @param docRef
-      * @params attribs
-      * @param vpdiCode
-      */
+    /**
+     * Update a document indexes based on document reference(docRef) passed.
+     * @param params
+     * @param docRef
+     * @params attribs
+     * @param vpdiCode
+     */
     def updateDocument(Map params, String docRef, Map attribs, String vpdiCode) throws BdmsException {
 
         def bdm = new BDMManager();
