@@ -115,6 +115,7 @@ class BdmAttachmentService extends ServiceBase {
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             return docRef;
         } catch (Exception e) {
+		log.error("for unhandled exception"+e.message+ " and "+e)
             throwAppropriateException(e)
         }
 
@@ -211,6 +212,7 @@ class BdmAttachmentService extends ServiceBase {
 
 
     private def throwAppropriateException(Exception e) {
+
         if (e instanceof BdmInvalidIndexNameException) {
             log.error("ERROR: Invalid index names in search request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.File.Name.Request", [e.message]))
@@ -235,6 +237,9 @@ class BdmAttachmentService extends ServiceBase {
         } else if (e instanceof Exception) {
             log.error("ERROR: Error while creating a BDM document", e)
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
+        }
+        else {
+            log.error("Unhandled exceptoin is"+e.message + " and cause is "+e.getCause())
         }
     }
 

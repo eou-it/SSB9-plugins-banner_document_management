@@ -115,7 +115,7 @@ class BdmUtility {
             }
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-            println("bdmserver1="+bdmServerConfigurations)
+            log.info("bdmserver1="+bdmServerConfigurations)
             bdmServerConfigurations = getPassword(bdmServerConfigurations)
         }
         catch (Exception e) {
@@ -133,6 +133,8 @@ class BdmUtility {
         def username = bdmConfig.get("Username")
         def decryptedPwd = null
         try {
+            println("username="+username)
+            log.info("username="+username)
             //to decrypt the password
             sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
                     { result -> decryptedPwd = result }
