@@ -234,9 +234,10 @@ class BdmAttachmentService extends ServiceBase {
             log.error("ERROR: Error while searching  BDM documents", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", []))
         } else if (e instanceof Exception) {
-            log.error("ERROR: Error while creating a BDM document", e)
+            log.error("ERROR: Error while creating a BDM document", e + " cause is  "+e.getCause())
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
+
     }
 
 
