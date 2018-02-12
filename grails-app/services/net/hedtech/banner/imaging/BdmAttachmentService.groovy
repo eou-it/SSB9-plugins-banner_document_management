@@ -115,7 +115,7 @@ class BdmAttachmentService extends ServiceBase {
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             return docRef;
         } catch (Exception e) {
-			log.error("for unhandled exception"+e.message+ " and "+e)
+			//log.error("for unhandled exception="+e.message+ " and "+e.getCause)
             throwAppropriateException(e)
         }
 
@@ -149,7 +149,9 @@ class BdmAttachmentService extends ServiceBase {
      * @throws BdmsException
      *
      */
-    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+    //  BDM 9.1.1 changes -
+   def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+  //  def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{ //bdm 9.1
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)

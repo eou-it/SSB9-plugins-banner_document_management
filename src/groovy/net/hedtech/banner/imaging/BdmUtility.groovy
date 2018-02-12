@@ -117,6 +117,7 @@ class BdmUtility {
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
             println("bdmserver1="+bdmServerConfigurations)
             bdmServerConfigurations = getPassword(bdmServerConfigurations)
+			 log.info("bdmservercofig =="+bdmServerConfigurations)
         }
         catch (Exception e) {
             log.error("Please check the config file and also refer the error ", e)
@@ -140,12 +141,15 @@ class BdmUtility {
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
+					 println("decrypted pwd ="+decryptedPwd)
+            log.info("key pwd ="+keypassword)
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
         }
         finally {
             sql.close()
         }
+		log.error("bdmservercofig err =="+bdmConfig)
         return bdmConfig
     } //end of  CR-000149894
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {

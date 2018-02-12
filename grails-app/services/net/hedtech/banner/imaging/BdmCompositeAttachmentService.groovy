@@ -230,13 +230,43 @@ class BdmCompositeAttachmentService {
 
     //Delete functionality by docref for result check log file - DM
     def delete(Map params) throws ApplicationException {
-        String vpdiCode = getVpdiCode()
-        BdmCompositeAttachmentService bdmc = new BdmCompositeAttachmentService();
-        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
-        JSONObject obj = bdmAttachmentService.searchDocument(bdmServerConfigurations, new String(params.id.decodeBase64()), getVpdiCode())
-        ArrayList<Integer> docIds = new ArrayList<Integer>();
-        docIds.add(obj.get('docId'));
-        bdmAttachmentService.deleteDocument(bdmServerConfigurations, docIds, vpdiCode);
+        System.out.println(" deep in Param = "+params)
+//        if(params == null) {
+//        String vpdiCode = getVpdiCode()
+//        BdmCompositeAttachmentService bdmc = new BdmCompositeAttachmentService();
+//        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
+//        JSONObject obj = bdmAttachmentService.searchDocument(bdmServerConfigurations, new String(params.id.decodeBase64()), getVpdiCode())
+//        ArrayList<Integer> docIds = new ArrayList<Integer>();
+//        docIds.add(obj.get('docId'));
+//        bdmAttachmentService.deleteDocument(bdmServerConfigurations, docIds, vpdiCode);
+//        }
+//        //BDM 9.1 changes
+//        else {
+            String vpdiCode = getVpdiCode()
+            Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
+            if (!(params.id)) {
+                System.out.println("deep params.id first if ="+params.id);
+                def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
+
+                if (!criteria) {
+                    throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.Delete.Request", []))
+                }
+                bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
+
+            } else if (params.id) {
+                System.out.println("deep params.id else ="+params.id);
+                System.out.println("deep bdmconfiguration else "+bdmServerConfigurations)
+                String docref=decodeDocRef(params.id)
+                System.out.println("deep using decode doc ref method  ="+docref);
+//                String[] tokens = docref.split("/");
+//                Integer a =Integer.parseInt(tokens[2])
+                //System.out.println("deep tokens="+a +" and type= "+typeof(a))
+             //   ArrayList<Integer> docIds = new ArrayList<Integer>();
+              //   docIds.add(a);
+                bdmAttachmentService.deleteDocumentByDocRef(bdmServerConfigurations,docref,vpdicode)
+             //   bdmAttachmentService.deleteDocument(bdmServerConfigurations, [params.id], vpdiCode)
+                //bdmAttachmentService.deleteDocument(bdmServerConfigurations, docIds, vpdiCode);
+            }
 
     }// delete end
 
