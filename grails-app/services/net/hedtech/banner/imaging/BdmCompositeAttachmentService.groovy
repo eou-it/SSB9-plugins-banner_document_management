@@ -246,7 +246,7 @@ class BdmCompositeAttachmentService {
                 System.out.println("deep params.id else ="+params.id);
                 System.out.println("deep bdmconfiguration else "+bdmServerConfigurations)
                 String docref1=decodeDocRef(params.id)
-                System.out.println("deep using decode doc ref method  ="+docref);
+                System.out.println("deep using decode doc ref method  ="+docref1);
 
                 bdmAttachmentService.deleteDocumentByDocRef(bdmServerConfigurations,docref1,vpdicode)
              
