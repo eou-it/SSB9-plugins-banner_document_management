@@ -115,7 +115,7 @@ class BdmUtility {
             }
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-            println("bdmserver1="+bdmServerConfigurations)
+           // println("bdmserver1="+bdmServerConfigurations)
             bdmServerConfigurations = getPassword(bdmServerConfigurations)
 			 log.info("bdmservercofig =="+bdmServerConfigurations)
         }
@@ -145,6 +145,11 @@ class BdmUtility {
             log.info("key pwd ="+keypassword)
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
+        }catch (SQLException sqle) {
+            throw sqle
+        }
+        catch (Exception e){
+            log.error("Please check the config file and also refer the error ", e)
         }
         finally {
             sql.close()

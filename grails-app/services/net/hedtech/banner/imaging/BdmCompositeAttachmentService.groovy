@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.Parser
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiRequestParams
@@ -14,6 +15,7 @@ import org.apache.commons.io.FileUtils
 import grails.util.Holders
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.json.JSONObject
+import org.omg.CORBA.portable.ApplicationException
 
 import javax.xml.bind.DatatypeConverter
 import java.awt.print.Printable
@@ -95,6 +97,14 @@ class BdmCompositeAttachmentService {
 
         log.debug("Decorator details :" + decorators)
         decorators
+    }
+    private def getDocumentDeleteDecorator(String DocId) {
+        def documentDecorator = new BdmAttachmentDecorator()
+        //documentDecorator.docRef = resourceDetail.opt('docRef')?.encodeAsBase64()
+      //  documentDecorator.dmType = resourceDetail.opt("dmType")
+        documentDecorator.docId = DocId;
+       // documentDecorator.indexes = toMap(resourceDetail.opt("indexes"))
+        return documentDecorator
     }
 
     private def getDocumentDecorator(org.json.JSONObject resourceDetail) {
@@ -229,29 +239,40 @@ class BdmCompositeAttachmentService {
     }
 
      //Delete functionality by docref for result check log file - DM
-    def delete(Map params) throws ApplicationException {
-        System.out.println(" deep in Param = "+params)
-            String vpdiCode = getVpdiCode()
+    def delete(Map params)  {
+        String status="failed";
+        def decorator=null;
+         String listString = "";
+        ArrayList <Integer> arrayList=new ArrayList<Integer>()
+                   String vpdiCode = getVpdiCode()
+        JSONObject result=null;
             Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
+
             if (!(params.id)) {
-                System.out.println("deep params.id first if ="+params.id);
-                def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
+                 def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
 
                 if (!criteria) {
                     throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.Delete.Request", []))
                 }
-                bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
+               result= bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
+               listString= result.get("DocId")
+                log.info("Return Message from AX for batch deletion "+result)
 
-            } else if (params.id) {
-                System.out.println("deep params.id else ="+params.id);
-                System.out.println("deep bdmconfiguration else "+bdmServerConfigurations)
-                String docref1=decodeDocRef(params.id)
-                System.out.println("deep using decode doc ref method  ="+docref1);
+            } else {
+                String docref = decodeDocRef(params.id)
+                String[] token = docref.split("/");
+                bdmServerConfigurations.put("AppName", token[1]);
+                arrayList.add(Integer.parseInt(token[2]));
+                result = bdmAttachmentService.deleteDocument(bdmServerConfigurations, arrayList, vpdiCode);
 
-                bdmAttachmentService.deleteDocumentByDocRef(bdmServerConfigurations,docref1,vpdicode)
-             
+                log.info("Return Message from AX While deleting by DocRef " + result)
+
             }
-
+        Map infoMap = [:]
+        infoMap.put("status",result.get("Message"))
+        infoMap.put("DocID",result.get("DocId"))
+        log.debug(infoMap)
+        infoMap
     }// delete end
 
     private def getDocIds(Map params) {
