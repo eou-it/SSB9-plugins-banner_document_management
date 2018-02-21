@@ -115,8 +115,9 @@ class BdmUtility {
             }
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-            log.info("bdmserver1="+bdmServerConfigurations)
+           // println("bdmserver1="+bdmServerConfigurations)
             bdmServerConfigurations = getPassword(bdmServerConfigurations)
+			 log.info("bdmservercofig =="+bdmServerConfigurations)
         }
         catch (Exception e) {
             log.error("Please check the config file and also refer the error ", e)
@@ -133,8 +134,6 @@ class BdmUtility {
         def username = bdmConfig.get("Username")
         def decryptedPwd = null
         try {
-            println("username="+username)
-            log.info("username="+username)
             //to decrypt the password
             sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
                     { result -> decryptedPwd = result }
@@ -142,12 +141,25 @@ class BdmUtility {
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
+					 log.debug("decrypted pwd ="+decryptedPwd)
+					
+					 if(decryptedPwd==null){
+					 log.info("decryptedPwd="+decryptedPwd)
+					 throw new Exception("return decrypted value is null");}
+            log.info("key pwd ="+keypassword)
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
+			
+        }catch (SQLException sqle) {
+            throw sqle
+        }
+        catch (Exception e){
+            log.error("Please check the config file and also refer the error ", e)
         }
         finally {
             sql.close()
         }
+		log.error("bdmservercofig err =="+bdmConfig)
         return bdmConfig
     } //end of  CR-000149894
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {

@@ -115,7 +115,7 @@ class BdmAttachmentService extends ServiceBase {
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             return docRef;
         } catch (Exception e) {
-		log.error("for unhandled exception"+e.message+ " and "+e)
+			log.error("for unhand-led exception="+e.message+ " and "+e.getCause)
             throwAppropriateException(e)
         }
 
@@ -149,7 +149,9 @@ class BdmAttachmentService extends ServiceBase {
      * @throws BdmsException
      *
      */
-    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+    //  BDM 9.1.1 changes -
+   def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+  //  def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{ //bdm 9.1
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
@@ -212,7 +214,6 @@ class BdmAttachmentService extends ServiceBase {
 
 
     private def throwAppropriateException(Exception e) {
-
         if (e instanceof BdmInvalidIndexNameException) {
             log.error("ERROR: Invalid index names in search request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.File.Name.Request", [e.message]))
@@ -235,12 +236,10 @@ class BdmAttachmentService extends ServiceBase {
             log.error("ERROR: Error while searching  BDM documents", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", []))
         } else if (e instanceof Exception) {
-            log.error("ERROR: Error while creating a BDM document", e)
+            log.error("ERROR: Error while creating a BDM document", e + " cause is  "+e.getCause())
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
-        else {
-            log.error("Unhandled exceptoin is"+e.message + " and cause is "+e.getCause())
-        }
+
     }
 
 
