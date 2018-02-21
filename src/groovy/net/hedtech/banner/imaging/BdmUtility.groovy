@@ -141,10 +141,15 @@ class BdmUtility {
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
-					 println("decrypted pwd ="+decryptedPwd)
+					 log.debug("decrypted pwd ="+decryptedPwd)
+					
+					 if(decryptedPwd==null){
+					 log.info("decryptedPwd="+decryptedPwd)
+					 throw new Exception("return decrypted value is null");}
             log.info("key pwd ="+keypassword)
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
+			
         }catch (SQLException sqle) {
             throw sqle
         }

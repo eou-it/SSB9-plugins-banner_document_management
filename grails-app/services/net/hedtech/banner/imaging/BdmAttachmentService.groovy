@@ -115,7 +115,7 @@ class BdmAttachmentService extends ServiceBase {
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             return docRef;
         } catch (Exception e) {
-			//log.error("for unhandled exception="+e.message+ " and "+e.getCause)
+			log.error("for unhand-led exception="+e.message+ " and "+e.getCause)
             throwAppropriateException(e)
         }
 
