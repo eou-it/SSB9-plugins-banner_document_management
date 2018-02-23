@@ -159,7 +159,7 @@ class BdmUtility {
         finally {
             sql.close()
         }
-		log.error("bdmservercofig err =="+bdmConfig)
+		
         return bdmConfig
     } //end of  CR-000149894
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {
