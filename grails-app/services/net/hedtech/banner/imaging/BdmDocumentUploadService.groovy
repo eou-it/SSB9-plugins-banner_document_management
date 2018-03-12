@@ -29,7 +29,6 @@ class BdmDocumentUploadService {
     def create(Map params) {
         Map infoMap = [:]
         def file = params.get("file")
-        println("Debug file = " + file)
         if (file == null) {
             println("Debug file = null")
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Empty.File.Upload", []))
@@ -50,8 +49,12 @@ class BdmDocumentUploadService {
             File F = new File(Holders.config.bdmserver.file.location)
             if (F.exists() == true) {
                 def usableSpace = F.getFreeSpace()
+<<<<<<< HEAD
                 println("debug here = " + usableSpace)
                 if (usableSpace == 0)
+=======
+                  if (usableSpace == 0)
+>>>>>>> origin/BDMforRDS-dev
                     log.error("Error!! Temporary folder size exceeded", ex)
             } else {
                 log.error("Error!! Unable to find temporary folder location", ex)

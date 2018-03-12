@@ -115,9 +115,10 @@ class BdmUtility {
             }
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
-           // println("bdmserver1="+bdmServerConfigurations)
-            bdmServerConfigurations = getPassword(bdmServerConfigurations)
-			 log.info("bdmservercofig =="+bdmServerConfigurations)
+
+             bdmServerConfigurations = getPassword(bdmServerConfigurations)
+			 log.debug("bdmservercofig =="+bdmServerConfigurations)
+
         }
         catch (Exception e) {
             log.error("Please check the config file and also refer the error ", e)

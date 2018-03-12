@@ -33,7 +33,6 @@ class BdmCompositeAttachmentService {
      *  and wrap the document details(indexes) into
      *  Decorator */
     def get(def encodedDocRef) {
-
         log.debug("BdmCompositeAttachmentService Show :: Encoded document reference ::" + encodedDocRef)
 
         def docRefMap = getConfigDetailsAndDocId(encodedDocRef)
@@ -67,8 +66,7 @@ class BdmCompositeAttachmentService {
      * the result as PagedResultArrayList  */
     def list(Map params) {
         log.debug("Getting list of BDM documents :" + params)
-
-        Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
+             Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
         boolean isPostOperation = RestfulApiValidationUtility.isQApiRequest(params)
         def criteriaList = []
 

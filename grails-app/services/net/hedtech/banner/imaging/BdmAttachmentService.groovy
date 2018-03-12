@@ -149,9 +149,13 @@ class BdmAttachmentService extends ServiceBase {
      * @throws BdmsException
      *
      */
+<<<<<<< HEAD
     //  BDM 9.1.1 changes -
    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
   //  def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{ //bdm 9.1
+=======
+    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+>>>>>>> origin/BDMforRDS-dev
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
