@@ -4,6 +4,8 @@
 package net.hedtech.banner.imaging
 
 import grails.util.Holders
+import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import net.hedtech.bdm.exception.BdmsException
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -11,11 +13,13 @@ import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
+import org.omg.CORBA.portable.ApplicationException
 import org.springframework.web.context.request.RequestContextHolder
 import groovy.sql.Sql
 import java.sql.SQLException
 
 class BdmUtility {
+
 
     private static final Logger log = Logger.getLogger(BdmUtility.class)
 
@@ -23,6 +27,7 @@ class BdmUtility {
 
     def static final DEFAULT_MAX_SIZE = 10
     def static final DEFAULT_OFFSET = 0
+
 
     /**
      *
@@ -109,6 +114,7 @@ class BdmUtility {
     public static def getBdmServerConfigurations(def appName = "", def dataSource = "") {
         def bdmServerConfigurations = [:]
 
+
         try {
             Holders.config.bdmserver.each { key, value ->
                 bdmServerConfigurations.put(key, value)
@@ -129,6 +135,7 @@ class BdmUtility {
 
     // to get Decrypted passwords defect no. CR-000149894 - DM
     private static LinkedHashMap getPassword(LinkedHashMap bdmConfig) {
+        def messageSource
         SessionFactory sessionFactory = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT).sessionFactory
         def sql = new Sql(sessionFactory.getCurrentSession().connection())
         def keypassword = null
@@ -142,20 +149,26 @@ class BdmUtility {
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
-					 log.debug("decrypted pwd ="+decryptedPwd)
-					
-					 if(decryptedPwd==null){
-					 log.info("decryptedPwd="+decryptedPwd)
-					 throw new Exception("return decrypted value is null");}
-            log.info("key pwd ="+keypassword)
+
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
+			log.info("bdmconfig="+bdmConfig);
+            if(decryptedPwd==null){
+                println("bdmConfig="+bdmConfig);
+                log.info("decryptedPwd="+decryptedPwd)
+                println("KeyPassword="+keypassword)
+                println("decryptedPwd="+decryptedPwd)
+                throw new Exception("return decrypted value is null");}
 			
         }catch (SQLException sqle) {
             throw sqle
         }
         catch (Exception e){
+
             log.error("Please check the config file and also refer the error ", e)
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Credential.Request", []))
+            //throw new ApplicationException(BdmsException, messageSource.getMessage("Invalid.Credential.Request", "Error!! Password or Udername is missmatch", Locale.getDefault()), e)
+            //throw new ApplicationException()
         }
         finally {
             sql.close()

@@ -3,19 +3,19 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.Parser
+//import com.sun.org.apache.xalan.internal.xsltc.compiler.Parser
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiRequestParams
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
-import net.hedtech.bdm.services.BDMManager
+//import net.hedtech.bdm.services.BDMManager
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.FileUtils
 import grails.util.Holders
-import org.codehaus.groovy.grails.web.json.JSONObject
+//import org.codehaus.groovy.grails.web.json.JSONObject
 import org.json.JSONObject
-import org.omg.CORBA.portable.ApplicationException
+//import org.omg.CORBA.portable.ApplicationException
 
 import javax.xml.bind.DatatypeConverter
 import java.awt.print.Printable
@@ -208,8 +208,9 @@ class BdmCompositeAttachmentService {
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as of now
 
             File fileDest = new File(tempPath, fileRefPath)
+            println("in bdm composit ")
             if (!fileDest.exists()) {
-                throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.FileRef.Request", [fileRefPath]))
+                throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.FileRef.Request", [fileRefPath]))
             }
 
             def docRef = bdmAttachmentService.createDocument(bdmServerConfigurations, fileDest.absolutePath, params.indexes, vpdiCode)
@@ -250,6 +251,7 @@ class BdmCompositeAttachmentService {
                  def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
 
                 if (!criteria) {
+                    println("delete invalid")
                     throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.Delete.Request", []))
                 }
                result= bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)

@@ -3,8 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.ibm.icu.util.ICUUncheckedIOException
+//import com.fasterxml.jackson.databind.exc.InvalidFormatException
+//import com.ibm.icu.util.ICUUncheckedIOException
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.exceptions.NotFoundException
@@ -22,24 +22,25 @@ import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
 import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import grails.util.Holders
-import org.apache.commons.fileupload.InvalidFileNameException
-import org.omg.CORBA.portable.ApplicationException
-import java.lang.RuntimeException
-
-//import org.eclipse.aether.repository.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-
-import javax.xml.bind.DatatypeConverter
-import java.io.File
-import org.codehaus.groovy.grails.web.json.JSONObject
 import org.json.JSONObject
-
-
-import java.nio.file.FileStore
-import java.nio.file.Path
-import java.text.NumberFormat
-
-import org.springframework.security.core.userdetails.User;
+//import org.apache.commons.fileupload.InvalidFileNameException
+////import org.omg.CORBA.portable.ApplicationException
+//import java.lang.RuntimeException
+//
+////import org.eclipse.aether.repository.Authentication
+//import org.springframework.security.core.context.SecurityContextHolder
+//
+//import javax.xml.bind.DatatypeConverter
+//import java.io.File
+//import org.codehaus.groovy.grails.web.json.JSONObject
+//import org.json.JSONObject
+//
+//
+//import java.nio.file.FileStore
+//import java.nio.file.Path
+//import java.text.NumberFormat
+//
+//import org.springframework.security.core.userdetails.User;
 
 
 /**
@@ -113,9 +114,10 @@ class BdmAttachmentService extends ServiceBase {
             JSONObject docAttributes = new JSONObject(attribs)
             JSONObject bdmParams = new JSONObject(params)
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
+           // log.info("docref="+docref);
             return docRef;
         } catch (Exception e) {
-			log.error("for unhand-led exception="+e.message+ " and "+e.getCause)
+		//	log.error("for unhand-led exception="+e.message+ " and "+e.getCause)
             throwAppropriateException(e)
         }
 
@@ -149,13 +151,10 @@ class BdmAttachmentService extends ServiceBase {
      * @throws BdmsException
      *
      */
-<<<<<<< HEAD
+
     //  BDM 9.1.1 changes -
    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
-  //  def deleteDocument(Map params, def docIds, String vpdiCode ) throws BdmsException{ //bdm 9.1
-=======
-    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
->>>>>>> origin/BDMforRDS-dev
+
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
@@ -245,6 +244,7 @@ class BdmAttachmentService extends ServiceBase {
         }
 
     }
+
 
 
 }

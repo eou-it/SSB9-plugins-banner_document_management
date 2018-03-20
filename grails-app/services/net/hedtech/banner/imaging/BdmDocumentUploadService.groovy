@@ -35,6 +35,7 @@ class BdmDocumentUploadService {
         }
 
         try {
+            println("messageSource="+messageSource)
             def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))
             infoMap.put("message", messageSource.getMessage("file.upload.success.message", null, Locale.getDefault()))
@@ -49,12 +50,9 @@ class BdmDocumentUploadService {
             File F = new File(Holders.config.bdmserver.file.location)
             if (F.exists() == true) {
                 def usableSpace = F.getFreeSpace()
-<<<<<<< HEAD
-                println("debug here = " + usableSpace)
+           //     println("debug here = " + usableSpace)
                 if (usableSpace == 0)
-=======
-                  if (usableSpace == 0)
->>>>>>> origin/BDMforRDS-dev
+
                     log.error("Error!! Temporary folder size exceeded", ex)
             } else {
                 log.error("Error!! Unable to find temporary folder location", ex)
