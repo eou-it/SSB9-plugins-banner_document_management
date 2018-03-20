@@ -4,8 +4,9 @@
 package net.hedtech.banner.imaging
 
 import grails.util.Holders
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
-import net.hedtech.bdm.exception.BdmsException
+//  import net.hedtech.bdm.exception.BdmsException
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -13,7 +14,7 @@ import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
-import org.omg.CORBA.portable.ApplicationException
+//import org.omg.CORBA.portable.ApplicationException
 import org.springframework.web.context.request.RequestContextHolder
 import groovy.sql.Sql
 import java.sql.SQLException
