@@ -42,26 +42,26 @@ class BdmDocumentViewService {
         def Map bdmServerConfig = BdmUtility.getBdmServerConfigurations()
         try {
             def bdm = new BDMManager();
-            def decodedDocRef = (!docRef.contains('/')) ?  new String(docRef.decodeBase64()):docRef
+            def decodedDocRef = (!docRef.contains('/')) ? new String(docRef.decodeBase64()) : docRef
 
             log.debug("decodedDocRef= $decodedDocRef");
 
             JSONObject bdmParams = new JSONObject(bdmServerConfig)
             bdm.createViewDocumentUrl(bdmParams, decodedDocRef, vpdiCode);
 
-        } catch(BdmInvalidAppNameException e){
+        } catch (BdmInvalidAppNameException e) {
             log.error("ERROR: Invalid App names in request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.AppName.Request", [e.message]))
-        } catch(BdmInvalidDataSourceNameException e){
+        } catch (BdmInvalidDataSourceNameException e) {
             log.error("ERROR: Invalid MEP data source name in request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DataSourceName", [e.message]))
-        } catch(BdmInvalidMepDataSourceNameException e){
+        } catch (BdmInvalidMepDataSourceNameException e) {
             log.error("ERROR: Invalid MEP data source name in request", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Mep.DataSourceName", [e.message]))
-        } catch(Exception ex) {
-            log.error (ex ,ex)
+        } catch (Exception ex) {
+            log.error(ex, ex)
 
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Bdm.Service.Exception", [ex.message ]))
+            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Bdm.Service.Exception", [ex.message]))
         }
     }
 

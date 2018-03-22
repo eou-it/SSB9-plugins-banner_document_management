@@ -3,11 +3,9 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-//import com.fasterxml.jackson.databind.exc.InvalidFormatException
-//import com.ibm.icu.util.ICUUncheckedIOException
+
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
-import net.hedtech.banner.exceptions.NotFoundException
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.BdmDocNotFoundException
 import net.hedtech.bdm.exception.BdmInvalidAppNameException
@@ -23,24 +21,6 @@ import net.hedtech.bdm.exception.BdmsException
 import net.hedtech.bdm.services.BDMManager
 import grails.util.Holders
 import org.json.JSONObject
-//import org.apache.commons.fileupload.InvalidFileNameException
-////import org.omg.CORBA.portable.ApplicationException
-//import java.lang.RuntimeException
-//
-////import org.eclipse.aether.repository.Authentication
-//import org.springframework.security.core.context.SecurityContextHolder
-//
-//import javax.xml.bind.DatatypeConverter
-//import java.io.File
-//import org.codehaus.groovy.grails.web.json.JSONObject
-//import org.json.JSONObject
-//
-//
-//import java.nio.file.FileStore
-//import java.nio.file.Path
-//import java.text.NumberFormat
-//
-//import org.springframework.security.core.userdetails.User;
 
 
 /**
@@ -114,10 +94,9 @@ class BdmAttachmentService extends ServiceBase {
             JSONObject docAttributes = new JSONObject(attribs)
             JSONObject bdmParams = new JSONObject(params)
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
-           // log.info("docref="+docref);
+            println("docref=" + docRef);
             return docRef;
         } catch (Exception e) {
-		//	log.error("for unhand-led exception="+e.message+ " and "+e.getCause)
             throwAppropriateException(e)
         }
 
@@ -153,7 +132,7 @@ class BdmAttachmentService extends ServiceBase {
      */
 
     //  BDM 9.1.1 changes -
-   def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
+    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
 
         def bdm = new BDMManager();
         try {
@@ -239,12 +218,10 @@ class BdmAttachmentService extends ServiceBase {
             log.error("ERROR: Error while searching  BDM documents", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", []))
         } else if (e instanceof Exception) {
-            log.error("ERROR: Error while creating a BDM document", e + " cause is  "+e.getCause())
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
 
     }
-
 
 
 }

@@ -33,7 +33,6 @@ hibernate {
     ]
 }
 
-
 // environment specific settings
 environments {
     development {

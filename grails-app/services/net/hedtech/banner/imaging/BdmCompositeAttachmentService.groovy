@@ -3,22 +3,19 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-//import com.sun.org.apache.xalan.internal.xsltc.compiler.Parser
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.restfulapi.RestfulApiRequestParams
 import net.hedtech.banner.restfulapi.RestfulApiValidationUtility
-//import net.hedtech.bdm.services.BDMManager
 import net.hedtech.restfulapi.PagedResultArrayList
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.FileUtils
 import grails.util.Holders
-//import org.codehaus.groovy.grails.web.json.JSONObject
-import org.json.JSONObject
-//import org.omg.CORBA.portable.ApplicationException
 
-import javax.xml.bind.DatatypeConverter
-import java.awt.print.Printable
+import org.json.JSONObject
+
+
+
 
 /**
  * Service class which interacts with bdmAttachmentService
@@ -29,6 +26,42 @@ class BdmCompositeAttachmentService {
     def bdmAttachmentService
     final String SUPPORTED_OPERATOR = "#OR"
 
+    //Delete functionality by passing docref and ID for result check log file - DM
+    def delete(Map params) {
+        ArrayList<Integer> arrayList = new ArrayList<Integer>()
+        String vpdiCode = getVpdiCode()
+        JSONObject result = null;
+        Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
+
+        if (!(params.id)) {
+            def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
+
+            if (!criteria) {
+                      throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.Delete.Request", []))
+            }
+            result = bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
+
+            log.info("Return Message from AX for batch deletion " + result)
+
+        } else {
+            String docref = decodeDocRef(params.id)
+            String[] token = docref.split("/");
+            bdmServerConfigurations.put("AppName", token[1]);
+            arrayList.add(Integer.parseInt(token[2]));
+            result = bdmAttachmentService.deleteDocument(bdmServerConfigurations, arrayList, vpdiCode);
+
+            log.info("Return Message from AX While deleting by DocRef " + result)
+
+        }
+
+        log.debug("Delete return object=" + result)
+//        Map infoMap = [:]
+//        infoMap.put("status",result.get("Message"))
+//        infoMap.put("DocID",result.get("DocId"))
+//        log.debug(infoMap)
+        return result
+    }// delete end
+
     /** Fetch a particular document from Ax server
      *  and wrap the document details(indexes) into
      *  Decorator */
@@ -38,9 +71,7 @@ class BdmCompositeAttachmentService {
         def docRefMap = getConfigDetailsAndDocId(encodedDocRef)
         def bdmConfigurations = BdmUtility.getBdmServerConfigurations(docRefMap[1], docRefMap[0])
         def documentDecorator = getDocumentDecorator(bdmAttachmentService.searchDocument(bdmConfigurations, new String(encodedDocRef.decodeBase64()), getVpdiCode()))
-
         log.debug("BdmCompositeAttachmentService Show :: Response Details ::" + documentDecorator)
-
         documentDecorator
     }
 
@@ -66,7 +97,7 @@ class BdmCompositeAttachmentService {
      * the result as PagedResultArrayList  */
     def list(Map params) {
         log.debug("Getting list of BDM documents :" + params)
-             Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
+        Map bdmServerConfigurations = validateAndGetBdmServerConfigurations(params)
         boolean isPostOperation = RestfulApiValidationUtility.isQApiRequest(params)
         def criteriaList = []
 
@@ -96,13 +127,14 @@ class BdmCompositeAttachmentService {
         log.debug("Decorator details :" + decorators)
         decorators
     }
-    private def getDocumentDeleteDecorator(String DocId) {
-        def documentDecorator = new BdmAttachmentDecorator()
-        //documentDecorator.docRef = resourceDetail.opt('docRef')?.encodeAsBase64()
-      //  documentDecorator.dmType = resourceDetail.opt("dmType")
-        documentDecorator.docId = DocId;
-       // documentDecorator.indexes = toMap(resourceDetail.opt("indexes"))
-        return documentDecorator
+
+    private def getDocumentDeleteDecorator(org.json.JSONObject resourceDetail1) {
+        def documentDecorator1 = new BdmAttachmentDecorator()
+        documentDecorator1.docRef = resourceDetail1.opt("Message")
+        documentDecorator1.dmType = resourceDetail1.opt("Message")
+        documentDecorator1.docId = resourceDetail1.opt("DocId")
+        documentDecorator1.indexes = null
+        return documentDecorator1
     }
 
     private def getDocumentDecorator(org.json.JSONObject resourceDetail) {
@@ -208,7 +240,6 @@ class BdmCompositeAttachmentService {
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as of now
 
             File fileDest = new File(tempPath, fileRefPath)
-            println("in bdm composit ")
             if (!fileDest.exists()) {
                 throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.FileRef.Request", [fileRefPath]))
             }
@@ -237,43 +268,6 @@ class BdmCompositeAttachmentService {
         }
     }
 
-     //Delete functionality by docref for result check log file - DM
-    def delete(Map params)  {
-        String status="failed";
-        def decorator=null;
-         String listString = "";
-        ArrayList <Integer> arrayList=new ArrayList<Integer>()
-                   String vpdiCode = getVpdiCode()
-        JSONObject result=null;
-            Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations(params?.dmType)
-
-            if (!(params.id)) {
-                 def criteria = (params.containsKey("indexes")) ? addCriteria([:], params) : getDocIds(params)
-
-                if (!criteria) {
-                    println("delete invalid")
-                    throw new ApplicationException("BDM-Documents", new BusinessLogicValidationException("Invalid.Delete.Request", []))
-                }
-               result= bdmAttachmentService.deleteDocument(bdmServerConfigurations, criteria, vpdiCode)
-               listString= result.get("DocId")
-                log.info("Return Message from AX for batch deletion "+result)
-
-            } else {
-                String docref = decodeDocRef(params.id)
-                String[] token = docref.split("/");
-                bdmServerConfigurations.put("AppName", token[1]);
-                arrayList.add(Integer.parseInt(token[2]));
-                result = bdmAttachmentService.deleteDocument(bdmServerConfigurations, arrayList, vpdiCode);
-
-                log.info("Return Message from AX While deleting by DocRef " + result)
-
-            }
-        Map infoMap = [:]
-        infoMap.put("status",result.get("Message"))
-        infoMap.put("DocID",result.get("DocId"))
-        log.debug(infoMap)
-        infoMap
-    }// delete end
 
     private def getDocIds(Map params) {
         def docIds = []
@@ -300,6 +294,7 @@ class BdmCompositeAttachmentService {
         def decorator = getDocumentDecorator(bdmAttachmentService.searchDocument(bdmServerConfigurations, docRef, vpdiCode))
 
         log.debug("BDM document after updated :: " + decorator)
+
         decorator
     }
 

@@ -23,23 +23,23 @@ def locationAdder = ConfigFinder.&addLocation.curry(grails.config.locations)
 [bannerGrailsAppConfig: "${userHome}/.grails/banner_configuration.groovy",
 ].each { envName, defaultFileName -> locationAdder(envName, defaultFileName) }
 
-grails.databinding.useSpringBinder=true
+grails.databinding.useSpringBinder = true
 grails.project.groupId = "net.hedtech" // used when deploying to a maven repo
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
-grails.mime.types = [html: ['text/html', 'application/xhtml+xml'],
-        xml: ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
-        text: 'text/plain',
-        js: 'text/javascript',
-        rss: 'application/rss+xml',
-        atom: 'application/atom+xml',
-        css: 'text/css',
-        csv: 'text/csv',
-        all: '*/*',
-        json: ['application/json', 'text/json'],
-        form: 'application/x-www-form-urlencoded',
-        multipartForm: 'multipart/form-data'
+grails.mime.types = [html         : ['text/html', 'application/xhtml+xml'],
+                     xml          : ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
+                     text         : 'text/plain',
+                     js           : 'text/javascript',
+                     rss          : 'application/rss+xml',
+                     atom         : 'application/atom+xml',
+                     css          : 'text/css',
+                     csv          : 'text/csv',
+                     all          : '*/*',
+                     json         : ['application/json', 'text/json'],
+                     form         : 'application/x-www-form-urlencoded',
+                     multipartForm: 'multipart/form-data'
 ]
 
 // The default codec used to encode data with ${}
@@ -51,14 +51,13 @@ grails.converters.domain.include.version = true
 grails.converters.json.date = "javascript"
 grails.converters.json.pretty.print = true
 
-
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = false
 
 // enable GSP preprocessing: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
 grails.views.gsp.sitemesh.preprocess = true
 
-seedDataTarget =  ['bgp': ['/src/groovy/net/hedtech/banner/seeddata/Data/banner_general_person.xml']]
+seedDataTarget = ['bgp': ['/src/groovy/net/hedtech/banner/seeddata/Data/banner_general_person.xml']]
 
 // Uncomment and edit the following lines to start using Grails encoding & escaping improvements
 

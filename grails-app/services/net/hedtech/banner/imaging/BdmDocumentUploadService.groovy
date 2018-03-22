@@ -3,23 +3,13 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.ibm.icu.util.ICUUncheckedIOException
 import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.bdm.exception.BdmsException
-import org.apache.commons.io.FileUtils
-import org.omg.CORBA.portable.ApplicationException
 
-import javax.lang.model.element.ExecutableElement
-import javax.xml.bind.DatatypeConverter
 import java.lang.reflect.UndeclaredThrowableException
-import java.nio.file.FileStore
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.text.NumberFormat
+
 
 class BdmDocumentUploadService {
 
@@ -35,7 +25,7 @@ class BdmDocumentUploadService {
         }
 
         try {
-            println("messageSource="+messageSource)
+            println("messageSource=" + messageSource)
             def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))
             infoMap.put("message", messageSource.getMessage("file.upload.success.message", null, Locale.getDefault()))
@@ -50,9 +40,8 @@ class BdmDocumentUploadService {
             File F = new File(Holders.config.bdmserver.file.location)
             if (F.exists() == true) {
                 def usableSpace = F.getFreeSpace()
-           //     println("debug here = " + usableSpace)
+                log.debug("debug here = " + usableSpace)
                 if (usableSpace == 0)
-
                     log.error("Error!! Temporary folder size exceeded", ex)
             } else {
                 log.error("Error!! Unable to find temporary folder location", ex)

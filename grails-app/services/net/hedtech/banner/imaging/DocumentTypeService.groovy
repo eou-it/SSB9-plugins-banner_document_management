@@ -24,9 +24,9 @@ class DocumentTypeService extends ServiceBase {
      * @param offset
      * @return
      */
-     def getCommonMatchingDocs(text, max, offset) {
+    def getCommonMatchingDocs(text, max, offset) {
         def filterText = BdmUtility.getLikeFormattedFilter(text)
-        def paginationParams = BdmUtility.getPagingParams( max, offset )
+        def paginationParams = BdmUtility.getPagingParams(max, offset)
         def documents = []
         def sql
         try {
@@ -36,12 +36,12 @@ class DocumentTypeService extends ServiceBase {
                 WHERE e.ETVDTYP_CODE = otgmgr.ul496_3.item \
                 AND (UPPER(e.ETVDTYP_CODE) LIKE :docTypCode OR  UPPER(e.ETVDTYP_DESC) LIKE :docTypDesc)"
 
-            sql.eachRow(commonMatchSql, [docTypCode: filterText, docTypDesc:filterText],
+            sql.eachRow(commonMatchSql, [docTypCode: filterText, docTypDesc: filterText],
                     paginationParams?.offset, paginationParams?.max) { commonMatchDoc ->
-                documents << ['code' : commonMatchDoc.code, 'description' : commonMatchDoc.description]
+                documents << ['code': commonMatchDoc.code, 'description': commonMatchDoc.description]
             }
-        }catch (SQLException ae) {
-            throw new ApplicationException(DocumentTypeService,ae)
+        } catch (SQLException ae) {
+            throw new ApplicationException(DocumentTypeService, ae)
         }
         finally {
             sql?.close()

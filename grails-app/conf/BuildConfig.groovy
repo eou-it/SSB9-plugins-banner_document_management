@@ -43,9 +43,9 @@ grails.project.dependency.resolution = {
 
         // Note: elvyx-1.0.24_beta.jar remains in the lib/ directory of the project as it is not available in a public repo due to licensing issues.
         build 'org.antlr:antlr:3.2',
-              'com.thoughtworks.xstream:xstream:1.2.1'
-              'javassist:javassist:3.8.0.GA'
-            //    'bdm-client-1.9.10.jar'
+                'com.thoughtworks.xstream:xstream:1.2.1'
+        'javassist:javassist:3.8.0.GA'
+        //    'bdm-client-1.9.10.jar'
         compile 'org.hamcrest:hamcrest-core:1.3'//,'bdm-client-1.9.10.jar'
         runtime "javax.servlet:jstl:1.1.2"
 
@@ -57,7 +57,7 @@ grails.project.dependency.resolution = {
 
         runtime 'jdom:jdom:1.0'
 
-    //    runtime 'bdm-client-1.9.10.jar'
+        //    runtime 'bdm-client-1.9.10.jar'
 
 
     }

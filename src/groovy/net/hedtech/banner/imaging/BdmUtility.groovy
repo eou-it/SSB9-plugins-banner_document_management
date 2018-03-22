@@ -6,7 +6,6 @@ package net.hedtech.banner.imaging
 import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
-//  import net.hedtech.bdm.exception.BdmsException
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -14,7 +13,6 @@ import org.hibernate.SessionFactory
 import org.hibernate.dialect.Dialect
 import org.hibernate.engine.SessionFactoryImplementor
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata
-//import org.omg.CORBA.portable.ApplicationException
 import org.springframework.web.context.request.RequestContextHolder
 import groovy.sql.Sql
 import java.sql.SQLException
@@ -123,13 +121,13 @@ class BdmUtility {
             (appName) ? bdmServerConfigurations.put("AppName", appName) : ""
             (dataSource) ? bdmServerConfigurations.put("BdmDataSource", dataSource) : ""
 
-             bdmServerConfigurations = getPassword(bdmServerConfigurations)
-			 log.debug("bdmservercofig =="+bdmServerConfigurations)
+            bdmServerConfigurations = getPassword(bdmServerConfigurations)
+            log.debug("bdmservercofig =="+bdmServerConfigurations)
 
         }
         catch (Exception e) {
             log.error("Please check the config file and also refer the error ", e)
-               }
+        }
         return bdmServerConfigurations
 
     }
@@ -146,21 +144,17 @@ class BdmUtility {
             //to decrypt the password
             sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
                     { result -> decryptedPwd = result }
-         
+
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
 
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
-			log.info("bdmconfig="+bdmConfig);
+            log.info("bdmconfig="+bdmConfig);
             if(decryptedPwd==null){
-                println("bdmConfig="+bdmConfig);
-                log.info("decryptedPwd="+decryptedPwd)
-                println("KeyPassword="+keypassword)
-                println("decryptedPwd="+decryptedPwd)
                 throw new Exception("return decrypted value is null");}
-			
+
         }catch (SQLException sqle) {
             throw sqle
         }
@@ -168,15 +162,14 @@ class BdmUtility {
 
             log.error("Please check the config file and also refer the error ", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Credential.Request", []))
-            //throw new ApplicationException(BdmsException, messageSource.getMessage("Invalid.Credential.Request", "Error!! Password or Udername is missmatch", Locale.getDefault()), e)
-            //throw new ApplicationException()
         }
         finally {
             sql.close()
         }
-		
+
         return bdmConfig
     } //end of  CR-000149894
+
     public static def getGenericErrorMessage(def messageKey, def messageArg, def locale = Locale.getDefault()) {
         def messageSource = Holders.grailsApplication.mainContext.getBean 'messageSource'
         messageSource.getMessage(messageKey, messageArg, "An unknown document exception occurred. Please contact your administrator.", locale)
