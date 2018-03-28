@@ -6,6 +6,7 @@ package net.hedtech.banner.imaging
 import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import net.hedtech.bdm.exception.BdmsException
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -151,17 +152,16 @@ class BdmUtility {
 
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
-            log.info("bdmconfig="+bdmConfig);
-            if(decryptedPwd==null){
-                throw new Exception("return decrypted value is null");}
+           if(decryptedPwd==null){
+                throw new RuntimeException("decrypted password is null");}
 
         }catch (SQLException sqle) {
             throw sqle
         }
         catch (Exception e){
-
+            println("e.message="+e.message+ " and  e=" +e  );
             log.error("Please check the config file and also refer the error ", e)
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Credential.Request", []))
+            throw new ApplicationException(BdmsException, new BusinessLogicValidationException("Invalid.Credential.Request", []))
         }
         finally {
             sql.close()

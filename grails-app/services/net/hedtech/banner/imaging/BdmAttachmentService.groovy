@@ -217,7 +217,7 @@ class BdmAttachmentService extends ServiceBase {
         } else if (e instanceof BdmMalformedDocRefException) {
             log.error("ERROR: Error while searching  BDM documents", e)
             throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.DocRef.Data", []))
-        } else if (e instanceof Exception) {
+        }else if (e instanceof Exception) {
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
 
