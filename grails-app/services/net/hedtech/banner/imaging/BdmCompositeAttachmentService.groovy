@@ -301,26 +301,11 @@ class BdmCompositeAttachmentService {
     private def decodeDocRef(String encodedData) {
 
         def decodedDocRef
-		//println("encodeddata="+encodedData)
-		//fix for update functionality for non-encode docref
-        def isEncodedData =Base64.isArrayByteBase64(encodedData.getBytes() ?: "");
-		try {
+        def isEncodedData = Base64.isArrayByteBase64(encodedData.getBytes() ?: "");
+        if (isEncodedData)
             decodedDocRef = new String(encodedData.decodeBase64())
-        } catch(RuntimeException e){
-            log.debug("e.getmessage="+e.getMessage())
-
-            if(e.message.equals("bad character in base64 value")){
-                log.warn("it is not recommended to pass decoded docref while update")
-                decodedDocRef = encodedData
-            }
-            // println("e.getmessage="+e.getMessage())
-        }
-// OLD code
-// if (isEncodedData){
-//            decodedDocRef = new String(encodedData.decodeBase64())}
-//        else{
-//            decodedDocRef = encodedData; // Accept docRef isn't encoded
-//			}
+        else
+            decodedDocRef = encodedData; // Accept docRef isn't encoded
 
         log.info("Decoded document reference is ::" + decodedDocRef)
 
