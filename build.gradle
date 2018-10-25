@@ -9,7 +9,7 @@ buildscript {
     }
 }
 
-version "0.1"
+version "1.0.1"
 group "banner.document.management"
 
 apply plugin:"eclipse"
@@ -50,6 +50,29 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
+    runtime 'org.antlr:antlr:3.2','com.thoughtworks.xstream:xstream:1.2.1','javassist:javassist:3.8.0.GA'
+    compile 'org.hamcrest:hamcrest-core:1.3'
+    runtime "javax.servlet:jstl:1.1.2"
+
+    compile 'org.springframework:spring-test:3.1.0.RELEASE'
+    compile 'com.googlecode.json-simple:json-simple:1.1'
+    compile 'org.json:json:20090211'
+    compile 'jdom:jdom:1.0'
+
+    // Added for BannerXE -BDM jars as  physical path
+    compile files("lib/axservices-1.0.jar")
+    compile files("lib/bdm-client-1.7.jar")
+    compile files("lib/ISNetworksProvider-1.0.jar")
+    compile files("lib/WxCrypto5-1.0.jar")
+
+    //Added for BannerXE
+    compile "org.grails.plugins:hibernate5"
+
+    compile "org.hibernate:hibernate-core:5.1.5.Final"
+    compile "org.hibernate:hibernate-ehcache:5.1.5.Final"
+
+    // Added for BannerXE - Internal plugin dependency
+    //compile project(':banner-general-person')
 }
 
 bootRun {
@@ -76,4 +99,10 @@ grailsPublish {
 
 assets {
     packagePlugin = true
+}
+
+grails {
+    plugins {
+        compile project(':banner-general-person')
+    }
 }

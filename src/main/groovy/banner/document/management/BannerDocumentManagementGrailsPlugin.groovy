@@ -1,9 +1,20 @@
+/** *******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ ********************************************************************************* */
+
+
 package banner.document.management
 
 import grails.plugins.*
 
+/**
+ * A Grails Plugin providing cross cutting concerns such as security and database access
+ * for Banner web applications.
+ * */
 class BannerDocumentManagementGrailsPlugin extends Plugin {
-
+	
+	 String version = "1.0.1"
+	 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "3.3.2 > *"
     // resources that are excluded from plugin packaging
@@ -11,60 +22,38 @@ class BannerDocumentManagementGrailsPlugin extends Plugin {
         "grails-app/views/error.gsp"
     ]
 
-    // TODO Fill in these fields
-    def title = "Banner Document Management" // Headline display name of the plugin
-    def author = "Your name"
-    def authorEmail = ""
-    def description = '''\
-Brief summary/description of the plugin.
-'''
+    def author = "Ellucian"
+    def authorEmail = "actionline@ellucian.com"
+    def title = "BannerDocumentManagement Plugin"
+    def description = '''This plugin is BannerDocumentManagement.'''//.stripMargin()  // TODO Enable this once we adopt Groovy 1.7.3
+
+    def documentation = "http://sungardhe.com/development/horizon/plugins/banner-document-management"
+
     def profiles = ['web']
 
-    // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/banner-document-management"
-
-    // Extra (optional) plugin metadata
-
-    // License: one of 'APACHE', 'GPL2', 'GPL3'
-//    def license = "APACHE"
-
-    // Details of company behind the plugin (if there is one)
-//    def organization = [ name: "My Company", url: "http://www.my-company.com/" ]
-
-    // Any additional developers beyond the author specified above.
-//    def developers = [ [ name: "Joe Bloggs", email: "joe@bloggs.net" ]]
-
-    // Location of the plugin's issue tracker.
-//    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
-
-    // Online location of the plugin's browseable source code.
-//    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
 
     Closure doWithSpring() { {->
-            // TODO Implement runtime spring config (optional)
+           // no-op
         }
     }
 
     void doWithDynamicMethods() {
-        // TODO Implement registering dynamic methods to classes (optional)
+        // no-op
     }
 
     void doWithApplicationContext() {
-        // TODO Implement post initialization spring config (optional)
+        // no-op
     }
 
     void onChange(Map<String, Object> event) {
-        // TODO Implement code that is executed when any artefact that this plugin is
-        // watching is modified and reloaded. The event contains: event.source,
-        // event.application, event.manager, event.ctx, and event.plugin.
+       // no-op
     }
 
     void onConfigChange(Map<String, Object> event) {
-        // TODO Implement code that is executed when the project configuration changes.
-        // The event is the same as for 'onChange'.
+        // no-op
     }
 
     void onShutdown(Map<String, Object> event) {
-        // TODO Implement code that is executed when the application shuts down (optional)
+       // no-op
     }
 }

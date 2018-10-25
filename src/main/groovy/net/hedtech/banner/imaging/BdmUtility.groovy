@@ -8,7 +8,7 @@ import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import org.apache.commons.lang.StringUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.hibernate.SessionFactory
 
 import java.sql.SQLException
@@ -18,8 +18,9 @@ class BdmUtility {
     def static final DEFAULT_MAX_SIZE = 10
     def static final DEFAULT_OFFSET = 0
 
-    static SessionFactory sessionFactory = Holders.servletContext.getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT ).sessionFactory
 
+    //static SessionFactory sessionFactory = Holders.servletContext.getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT ).sessionFactory
+    static SessionFactory sessionFactory = Holders.getGrailsApplication().getMainContext().sessionFactory
     static String DECRYPT_SQL = "select gskdsec.decrypt_string(:encryptedStr) from dual"
     static String FETCH_CRYPTO_KEY_SQL = "select eoksecr.f_get_key() from dual"
 
@@ -58,8 +59,7 @@ class BdmUtility {
      * @return
      */
     public static def getConnection() {
-        def sessionFactory = Holders.servletContext.
-                getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT ).sessionFactory
+        def sessionFactory = Holders.getGrailsApplication().getMainContext().sessionFactory
         return sessionFactory.currentSession.connection()
     }
 

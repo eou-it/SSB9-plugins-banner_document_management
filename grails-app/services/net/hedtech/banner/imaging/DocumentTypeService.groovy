@@ -6,16 +6,17 @@ package net.hedtech.banner.imaging
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.service.ServiceBase
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 
 import java.sql.SQLException
 
 /**
  * This service helps to get document type for BDM attachments
  */
+@Slf4j
 class DocumentTypeService extends ServiceBase {
 
-    def log = Logger.getLogger(DocumentTypeService.name)
+    //def log = Logger.getLogger(DocumentTypeService.name)
 
     /**
      *
