@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2019 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.imaging
 
@@ -45,7 +45,7 @@ class DocumentTypeService extends ServiceBase {
             throw new ApplicationException(DocumentTypeService,ae)
         }
         finally {
-            sql?.close()
+     //       sql?.close()
         }
         return documents
     }

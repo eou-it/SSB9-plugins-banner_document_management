@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
@@ -72,14 +72,14 @@ class BdmUtility {
             sql = new Sql( getConnection() )
             def tableSql = """SELECT count(1) from EURVERS where 1 = 2 """
             sql.eachRow( tableSql ) {}
-            sql?.close()
+      //      sql?.close()
             return true;
         }
         catch (SQLException ae) {
             return false
         }
         finally {
-            sql?.close()
+      //      sql?.close()
         }
         return false
     }

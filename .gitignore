@@ -21,3 +21,5 @@ plugin.xml
 src/ddl/horizon_upgrade_fin.lis
 *.ser
 messages_ar_SA.properties
+build/
+.gradle/**/*
