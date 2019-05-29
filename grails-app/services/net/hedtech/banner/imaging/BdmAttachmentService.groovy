@@ -1,7 +1,8 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.imaging
+
 
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
@@ -26,7 +27,12 @@ import net.hedtech.bdm.exception.BdmsException
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
+    def messageSource
 
+    /**
+     * Place the uploaded file in a temporary location
+     * @param file
+     * */
     def Map createBDMLocation(file) {
         def map = [:]
         File fileDest
@@ -35,7 +41,7 @@ class BdmAttachmentService extends ServiceBase {
         String tempPath = Holders?.config.bdm.file.location
 
         // Temporary code for Testing the user defined file location
-        tempPath = null
+        // tempPath = null
         // Ends
 
         /*
@@ -48,10 +54,10 @@ class BdmAttachmentService extends ServiceBase {
 
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
-
+	checkExtension(fileName, file);
         File userDir = new File(tempPath, hashedName)
 
-        userDir.mkdir()
+        boolean b = userDir.mkdir()
 
         if (!userDir?.exists()) {
             throw new ApplicationException(BdmAttachmentService,
@@ -72,7 +78,26 @@ class BdmAttachmentService extends ServiceBase {
 
         return map
     }
+    //This function checks if the file extension and size matches the security rules
+    // mentioned in Config file - DM
+    def checkExtension(String fileName, file) {
 
+        String[] arr = Holders.config.bdmserver.defaultfile_ext
+
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].equals(fileName.substring(fileName.length() - 4))) {
+                throw new RuntimeException("File extension");
+            }
+        }
+
+        def fileSize = ((file.getSize()) / 1024) / 1024
+        log.error("File size trying to upload is =" + fileSize)
+        def size = Holders.config.bdmserver.defaultFileSize
+        if (fileSize > size) {
+            throw new RuntimeException("File size exceeding");
+        }
+
+    }//end of checkExtension
     /**
      * This method is used to create Position Description Comment for a posDescId
      * @param positionDescription
@@ -88,7 +113,7 @@ class BdmAttachmentService extends ServiceBase {
 
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
             println("docref=" + docRef);
-            return docRef
+            return docRef;
         } catch (Exception e) {
             throwAppropriateException(e)
         }
@@ -151,7 +176,7 @@ class BdmAttachmentService extends ServiceBase {
      * @return
      * @throws BdmsException
      */
-    def deleteDocument(Map params, Map attribs, String vpdiCode) {
+    def deleteDocument(Map params, Map attribs, String vpdiCode) throws BdmsException {
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
@@ -162,7 +187,7 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) {
+    def deleteDocumentByDocRef(Map params, String docRef, String vpdiCode) throws BdmsException {
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)

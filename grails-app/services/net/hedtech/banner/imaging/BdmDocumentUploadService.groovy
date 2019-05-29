@@ -25,7 +25,6 @@ class BdmDocumentUploadService {
         }
 
         try {
-            println("Default locale="+Locale.getDefault());
             println("messageSource=" + messageSource)
             def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))

@@ -267,7 +267,7 @@ class BdmCompositeAttachmentService {
         String tempPath = Holders?.config.bdm.file.location
 
         // Temporary code for Testing the user defined file location
-        tempPath = null
+       //tempPath = null
         // Ends
 
         /*

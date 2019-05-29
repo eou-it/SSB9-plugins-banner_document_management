@@ -7,7 +7,6 @@ package net.hedtech.banner.imaging
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.bdm.ax.WxCrypto
-//import org.codehaus.groovy. grails.web.servlet.GrailsApplicationAttributes
 import org.grails.web.util.GrailsApplicationAttributes
 import org.hibernate.SessionFactory
 
@@ -72,7 +71,7 @@ class BdmForRDSService {
             log.error("error occured " + ex)
         }
         finally {
-            sql.close();
+           // sql.close();
         }
         return [new BdmForRdsDecorator(result)]
     }

@@ -130,7 +130,7 @@ class BdmUtility {
     public static def getBdmServerConfigurations(def appName = "", def dataSource = "") {
         def bdmServerConfigurations = [:]
 
-    println("inside getBdmServerConfigurations ")
+
         try {
             Holders.config.bdmserver.each { key, value ->
                 bdmServerConfigurations.put(key, value)
@@ -159,22 +159,22 @@ class BdmUtility {
             //to decrypt the password
             sql.call("{ ? = call EOKSECR.f_get_bdmpwd(?)}", [Sql.VARCHAR, username])
                     { result -> decryptedPwd = result }
-            println("B2");
+
             //decrypt the Keypassword
             sql.call("{? = call EOKSECR.f_get_key()}", [Sql.VARCHAR])
                     { result -> keypassword = result }
-            println("B21");
+
             bdmConfig.put("KeyPassword", keypassword)
             bdmConfig.put("Password", decryptedPwd)
             if(decryptedPwd==null){
                 throw new RuntimeException("decrypted password is null");}
 
         }catch (SQLException sqle) {
-            println("B3");
             throw sqle
         }
         catch (Exception e){
-            //log.error("Please check the config file and also refer the error ", e)
+            println("e.message="+e.message+ " and  e=" +e  );
+            log.error("Please check the config file and also refer the error ", e)
             throw new ApplicationException(BdmsException, new BusinessLogicValidationException("Invalid.Credential.Request", []))
         }
         finally {
