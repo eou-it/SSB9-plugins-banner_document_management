@@ -18,3 +18,9 @@ project(':grails-constraints').projectDir = new File('../grails_constraints.git'
 
 include ':banner-codenarc'
 project(':banner-codenarc').projectDir = new File('../banner_codenarc.git')
+
+include ':restful-api'
+project(':restful-api').projectDir = new File('../restful-api.git')
+
+include ':banner-restful-api-support'
+project(':banner-restful-api-support').projectDir = new File('../banner-restful-api-support.git')
