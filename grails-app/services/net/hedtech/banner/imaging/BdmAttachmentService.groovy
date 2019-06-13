@@ -3,26 +3,17 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
-
+import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.banner.service.ServiceBase
+import net.hedtech.bdm.exception.*
 import net.hedtech.bdm.services.BDMManager
-import grails.util.Holders
 import org.json.JSONObject
+
 import javax.xml.ws.WebServiceException
 
 /* Import BDM Exception*/
-import net.hedtech.bdm.exception.BdmDocNotFoundException
-import net.hedtech.bdm.exception.BdmInvalidAppNameException
-import net.hedtech.bdm.exception.BdmInvalidDataSourceNameException
-import net.hedtech.bdm.exception.BdmInvalidIndexNameException
-import net.hedtech.bdm.exception.BdmInvalidIndexValueException
-import net.hedtech.bdm.exception.BdmInvalidMepDataSourceNameException
-import net.hedtech.bdm.exception.BdmMalformedDocRefException
-import net.hedtech.bdm.exception.BdmMismatchDataSourceNameException
-import net.hedtech.bdm.exception.BdmUniqueKeyViolationException
-import net.hedtech.bdm.exception.BdmsException
 
 class BdmAttachmentService extends ServiceBase {
 
@@ -38,23 +29,11 @@ class BdmAttachmentService extends ServiceBase {
         File fileDest
         String fileName
 
-        String tempPath = Holders?.config.bdm.file.location
-
-        // Temporary code for Testing the user defined file location
-        // tempPath = null
-        // Ends
-
-        /*
-            If the temporary location is Blank, The value in the BDM configuration would be used
-         */
-        if (tempPath == null) {
-            tempPath = Holders.config.bdmserver.file.location
-        }
-
+        String tempPath = Holders?.config.bdmserver.file.location
 
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
-	checkExtension(fileName, file);
+        checkExtension(fileName, file);
         File userDir = new File(tempPath, hashedName)
 
         boolean b = userDir.mkdir()
@@ -79,21 +58,29 @@ class BdmAttachmentService extends ServiceBase {
         return map
     }
     //This function checks if the file extension and size matches the security rules
-    // mentioned in Config file - DM
     def checkExtension(String fileName, file) {
 
-        String[] arr = Holders.config.bdmserver.defaultfile_ext
+        String[] arr = Holders?.config.bdmserver.restrictedFile_ext
 
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i].equals(fileName.substring(fileName.length() - 4))) {
-                throw new RuntimeException("File extension");
+        def index = fileName.lastIndexOf('.')
+
+        if (index > 0) {
+            String extension = fileName.lastIndexOf('.');
+
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i].equals(extension)) {
+                    throw new RuntimeException("File extension");
+                }
             }
         }
 
         def fileSize = ((file.getSize()) / 1024) / 1024
-        log.error("File size trying to upload is =" + fileSize)
-        def size = Holders.config.bdmserver.defaultFileSize
-        if (fileSize > size) {
+        log.info("File size to upload is =" + fileSize)
+        def size = Holders?.config.bdmserver.defaultFileSize
+
+        if (!size) {
+            throw new RuntimeException("Upload Size Undefined");
+        } else if (fileSize > size) {
             throw new RuntimeException("File size exceeding");
         }
 
@@ -135,7 +122,7 @@ class BdmAttachmentService extends ServiceBase {
         }
     }
 
-    def searchDocument(Map params, def queryCriterias, String vpdiCode)  throws BdmsException {
+    def searchDocument(Map params, def queryCriterias, String vpdiCode) throws BdmsException {
         try {
             def bdm = new BDMManager();
             JSONObject bdmParams = new JSONObject(params)
@@ -158,7 +145,7 @@ class BdmAttachmentService extends ServiceBase {
      */
 
     //  BDM 9.1.1 changes -
-    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException  {
+    def deleteDocument(Map params, ArrayList docIds, String vpdiCode) throws BdmsException {
         def bdm = new BDMManager();
         try {
             JSONObject bdmParams = new JSONObject(params)
@@ -230,7 +217,6 @@ class BdmAttachmentService extends ServiceBase {
             throw new ApplicationException(BdmAttachmentService, e)
         }
     }
-
 
 
     private def throwAppropriateException(Exception e) {

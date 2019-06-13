@@ -159,43 +159,12 @@ class BdmCompositeAttachmentService {
      * */
     private def getListOfCriteria(List criterias, Map params) {
         Map indexes = params.get("indexes")
-        try {
-            if (indexes?.containsKey(SUPPORTED_OPERATOR)) {
-                //  println("supported_operator=" + SUPPORTED_OPERATOR)
-                List indexValues = indexes.get(SUPPORTED_OPERATOR)
-                // println("Map Value is =" + indexValues);
-                def indexLength = indexValues.size()
-                // println("indexLength is " + indexLength)
-                (0..(indexLength - 1)).each { length ->
-                    // println("length value is : " + length)
-                    //  println(indexValues.get(length))
-                    criterias.add(indexValues.get(length))
-                    //   println(criterias)
-                }
-            } else {
-                criterias << new org.json.JSONObject(indexes)
-            }
-        } catch (e) {
-            log.error "Error in input data", e
-            throw new ApplicationException(BdmAttachmentService, new BusinessLogicValidationException("Invalid.Index.Value", []))
-        }
-        criterias
-    }
-
-    /**
-     * Used by list method for supporting Logical operator
-     * in the INPUT json
-     * */
-    /*
-    private def getListOfCriteria(List criterias, Map params) {
-        Map indexes = params.get("indexes")
         println("indexes=" + indexes)
         try {
             if (indexes?.containsKey(SUPPORTED_OPERATOR)) {
                 println("supported_operator=" + SUPPORTED_OPERATOR)
                 org.json.JSONArray indexValues = indexes.get(SUPPORTED_OPERATOR)
                 def indexLength = indexValues.length()
-                println("indexLength is " + indexLength)
                 (0..(indexLength - 1)).each { length ->
                     criterias << new org.json.JSONObject(indexValues.opt(length))
                 }
@@ -208,7 +177,6 @@ class BdmCompositeAttachmentService {
         }
         criterias
     }
-    */
 
     /**
      * Used when querying using QAPI . Add query criteria to the document.
@@ -264,19 +232,7 @@ class BdmCompositeAttachmentService {
     private def createDocumentInAX(params, bdmServerConfigurations, vpdiCode) {
         def dir = ""
 
-        String tempPath = Holders?.config.bdm.file.location
-
-        // Temporary code for Testing the user defined file location
-       //tempPath = null
-        // Ends
-
-        /*
-            If the temporary location is Blank, The value in the BDM configuration would be used
-         */
-        if (tempPath == null) {
-            tempPath = Holders.config.bdmserver.file.location
-        }
-        // Ends
+        String tempPath = Holders?.config.bdmserver.file.location
 
         def documentDecorator
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as of now

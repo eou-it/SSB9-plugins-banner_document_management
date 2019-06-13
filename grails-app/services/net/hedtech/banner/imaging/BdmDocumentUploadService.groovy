@@ -52,16 +52,20 @@ class BdmDocumentUploadService {
 
         catch (RuntimeException ex) {
             if (ex.getMessage().equals("File extension")) {
-                log.error("File extension is not allowed as per  default configuration files extensions", ex)
-                String arr = Holders.config.bdmserver.defaultfile_ext
+                log.error("File extension is not allowed as per default configuration files extensions", ex)
+                String arr = Holders?.config.bdmserver.restrictedFile_ext
                 String Extension = arr.replace('[', ' ')
                 Extension = Extension.replace(']', ' ')
                 throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureExtension.message", "Error!!.Cannot upload file with" + Extension + "extension. Please contact your administrator for more details", Locale.getDefault()), ex)
             } else if (ex.getMessage().equals("File size exceeding")) {
                 log.error("File size exceeding from the default value mentioned in configuration files", ex)
-                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureFileSize.message", "Error!!.File size limit for upload exceeds the default value (" + Holders.config.bdmserver.defaultFileSize + " MB). Please contact your administrator for more details", Locale.getDefault()), ex)
-            } else
-                log.error("Unhandled runtime error ocurred please check", ex)
+                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureFileSize.message", "Error!!.File size limit for upload exceeds the default value (" + Holders?.config.bdmserver.defaultFileSize + " MB). Please contact your administrator for more details", Locale.getDefault()), ex)
+            } else if (ex.getMessage().equals("Upload Size Undefined")) {
+                log.error("Please configure Maximum FILE Size for upload", ex)
+                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureFileSize.message", "Error!!.File size for upload (bdmserver.defaultFileSize) is not configured. Please contact your administrator for more details", Locale.getDefault()), ex)
+            }
+            else
+                log.error("Unhandled runtime error occurred please check", ex)
         }
         log.info("Created file successfully. Response details :" + infoMap)
         return infoMap
