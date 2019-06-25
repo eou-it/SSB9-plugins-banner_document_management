@@ -29,7 +29,8 @@ class BdmDocumentUploadService {
             def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))
             infoMap.put("message", messageSource.getMessage("file.upload.success.message", null, Locale.getDefault()))
-            infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
+           // infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
+            infoMap.put("fileRef", map.get("encryptedFilePath"))
 
         }
         //CR-000149402 temp folder better error log auditing - DM

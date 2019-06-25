@@ -7,7 +7,13 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.testing.mixin.integration.Integration
+import grails.gorm.transactions.Rollback
+import org.springframework.test.context.ContextConfiguration;
 
+@Integration
+@Rollback
+//@ContextConfiguration(classes = BdmUtility.class )
 class BdmUtilityIntegrationTests extends BaseIntegrationTestCase{
 
 

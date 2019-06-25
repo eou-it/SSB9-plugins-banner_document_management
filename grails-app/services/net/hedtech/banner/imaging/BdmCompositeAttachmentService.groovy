@@ -231,11 +231,14 @@ class BdmCompositeAttachmentService {
      * */
     private def createDocumentInAX(params, bdmServerConfigurations, vpdiCode) {
         def dir = ""
+        // Get Instance of BDMFileEncrypt
+        def bdmFileEncrypt = new BDMFileEncrypt()
 
         String tempPath = Holders?.config.bdmserver.file.location
 
         def documentDecorator
         params.get('fileRefs')?.each { String fileRefPath -> // If two or more files are pushed to doc then all are uploaded but that is not allowed as of now
+            fileRefPath = bdmFileEncrypt.decrypt(fileRefPath)
 
             File fileDest = new File(tempPath, fileRefPath)
             if (!fileDest.exists()) {

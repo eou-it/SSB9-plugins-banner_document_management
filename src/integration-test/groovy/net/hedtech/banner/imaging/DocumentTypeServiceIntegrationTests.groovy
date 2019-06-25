@@ -3,14 +3,18 @@
  *******************************************************************************/
 package net.hedtech.banner.imaging
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@Integration
+@Rollback
 class DocumentTypeServiceIntegrationTests extends BaseIntegrationTestCase{
 
-    def documentTypeService
+    def documentTypeService = new DocumentTypeService();
 
     @Before
     public void setUp() {

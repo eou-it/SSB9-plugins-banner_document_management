@@ -10,15 +10,18 @@ import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.*
 import net.hedtech.bdm.services.BDMManager
 import org.json.JSONObject
+import net.hedtech.banner.imaging.BDMFileEncrypt
 
 import javax.xml.ws.WebServiceException
 
 /* Import BDM Exception*/
 
+
 class BdmAttachmentService extends ServiceBase {
 
     static transactional = true
     def messageSource
+
 
     /**
      * Place the uploaded file in a temporary location
@@ -28,6 +31,7 @@ class BdmAttachmentService extends ServiceBase {
         def map = [:]
         File fileDest
         String fileName
+        def bdmFileEncrypt = new BDMFileEncrypt()
 
         String tempPath = Holders?.config.bdmserver.file.location
 
@@ -52,6 +56,9 @@ class BdmAttachmentService extends ServiceBase {
         map.userDir = userDir
         map.fileName = fileName
         map.hashedName = hashedName
+
+        def encrptedValue =  bdmFileEncrypt.encrypt(hashedName + '/' + fileName)
+        map.encryptedFilePath = encrptedValue
 
         log.debug("BDM temp file details are :" + map)
 
