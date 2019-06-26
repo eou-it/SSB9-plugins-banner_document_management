@@ -35,8 +35,7 @@ class BDMFileEncrypt {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        println("Encrypted value is " + result)
-        log.debug("Encrypted value is " + result)
+        log.info("Encrypted value is " + result)
         return result.toString();
     }
 
@@ -54,7 +53,7 @@ class BDMFileEncrypt {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        println("Decrypted value is " + result)
+        log.info("Decrypted value is " + result)
         return result.toString();
     }
 

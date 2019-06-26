@@ -19,9 +19,9 @@ hibernate {
     dialect = "org.hibernate.dialect.Oracle10gDialect"
     config.location = [
           //  "classpath:applicationContext.xml"
-          "classpath:hibernate-banner-core.cfg.xml",
-          "classpath:hibernate-banner-general-validation-common.cfg.xml",
-          "classpath:hibernate-banner-general-person.cfg.xml",
+         //"classpath:hibernate-banner-core.cfg.xml",
+         // "classpath:hibernate-banner-general-validation-common.cfg.xml",
+       //  "classpath:hibernate-banner-general-person.cfg.xml",
     ]
 }
 

@@ -35,6 +35,8 @@ class BdmAttachmentService extends ServiceBase {
 
         String tempPath = Holders?.config.bdmserver.file.location
 
+        log.info("TempPath File Location is :" + tempPath)
+
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
         checkExtension(fileName, file);
@@ -60,7 +62,7 @@ class BdmAttachmentService extends ServiceBase {
         def encrptedValue =  bdmFileEncrypt.encrypt(hashedName + '/' + fileName)
         map.encryptedFilePath = encrptedValue
 
-        log.debug("BDM temp file details are :" + map)
+        log.info("BDM temp file details are :" + map)
 
         return map
     }
