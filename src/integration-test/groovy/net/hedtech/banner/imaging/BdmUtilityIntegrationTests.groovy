@@ -13,9 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 @Integration
 @Rollback
-//@ContextConfiguration(classes = BdmUtility.class )
 class BdmUtilityIntegrationTests extends BaseIntegrationTestCase{
-
 
     @Before
     public void setUp() {

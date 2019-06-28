@@ -9,12 +9,10 @@ import org.junit.Before
 import org.junit.Test
 import grails.testing.mixin.integration.Integration
 import grails.gorm.transactions.Rollback
-import org.springframework.test.context.ContextConfiguration;
 
 
 @Integration
 @Rollback
-//@ContextConfiguration(classes=BdmAttachmentService.class)
 class BdmAttachmentServiceTests extends BaseIntegrationTestCase{
 
     @Before
@@ -31,7 +29,7 @@ class BdmAttachmentServiceTests extends BaseIntegrationTestCase{
     @Test
     void testDeleteDocument() {
 
-        def bdmAttachmentService
+        def bdmAttachmentService = new BdmAttachmentService()
 
         // Get BDM configuration
         Map bdmServerConfigurations = BdmUtility.getBdmServerConfigurations()
@@ -46,10 +44,7 @@ class BdmAttachmentServiceTests extends BaseIntegrationTestCase{
         String vpdiCode= null
         String result = null
 
-        println("Running Test Cases for testDeleteDocument")
-
         result = bdmAttachmentService.deleteDocument(bdmServerConfigurations, arrayList, vpdiCode);
-
 
        assertNull(result)
 
