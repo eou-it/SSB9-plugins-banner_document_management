@@ -178,7 +178,7 @@ class BdmUtility {
             throw new ApplicationException(BdmsException, new BusinessLogicValidationException("Invalid.Credential.Request", []))
         }
         finally {
-            sql.close()
+          // Do nothing
         }
 
         return bdmConfig
