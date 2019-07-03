@@ -74,7 +74,7 @@ class BdmAttachmentService extends ServiceBase {
         def index = fileName.lastIndexOf('.')
 
         if (index > 0) {
-            String extension = fileName.lastIndexOf('.');
+            String extension = fileName.substring(index);
 
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i].equals(extension)) {
@@ -106,9 +106,7 @@ class BdmAttachmentService extends ServiceBase {
             def bdm = new BDMManager();
             JSONObject docAttributes = new JSONObject(attribs)
             JSONObject bdmParams = new JSONObject(params)
-
             String docRef = bdm.uploadDocument(bdmParams, filename, docAttributes, vpdiCode);
-            println("docref=" + docRef);
             return docRef;
         } catch (Exception e) {
             throwAppropriateException(e)

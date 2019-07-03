@@ -7,9 +7,7 @@ import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.bdm.exception.BdmsException
-
 import java.lang.reflect.UndeclaredThrowableException
-
 
 class BdmDocumentUploadService {
 
@@ -29,13 +27,10 @@ class BdmDocumentUploadService {
             def map = bdmAttachmentService.createBDMLocation(file)
             infoMap.put("status", messageSource.getMessage("file.upload.success", null, "success", Locale.getDefault()))
             infoMap.put("message", messageSource.getMessage("file.upload.success.message", null, Locale.getDefault()))
-           // infoMap.put("fileRef", map.get("hashedName") + '/' + map.get('fileName'))
             infoMap.put("fileRef", map.get("encryptedFilePath"))
-
+            log.info("Created file successfully. Response details :" + infoMap)
         }
         //CR-000149402 temp folder better error log auditing - DM
-
-
         catch (UndeclaredThrowableException ex) {
 
             File F = new File(Holders.config.bdmserver.file.location)
@@ -57,18 +52,16 @@ class BdmDocumentUploadService {
                 String arr = Holders?.config.bdmserver.restrictedFile_ext
                 String Extension = arr.replace('[', ' ')
                 Extension = Extension.replace(']', ' ')
-                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureExtension.message", "Error!!.Cannot upload file with" + Extension + "extension. Please contact your administrator for more details", Locale.getDefault()), ex)
+                throw new BdmsException(messageSource.getMessage("file.upload.failureExtension.message", [] as Object[], Locale.getDefault()), ex)
             } else if (ex.getMessage().equals("File size exceeding")) {
                 log.error("File size exceeding from the default value mentioned in configuration files", ex)
-                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureFileSize.message", "Error!!.File size limit for upload exceeds the default value (" + Holders?.config.bdmserver.defaultFileSize + " MB). Please contact your administrator for more details", Locale.getDefault()), ex)
+                throw new BdmsException(messageSource.getMessage("file.upload.failureFileSize.message", [] as Object[], Locale.getDefault()), ex)
             } else if (ex.getMessage().equals("Upload Size Undefined")) {
                 log.error("Please configure Maximum FILE Size for upload", ex)
-                throw new ApplicationException(BdmsException, messageSource.getMessage("file.upload.failureFileSize.message", "Error!!.File size for upload (bdmserver.defaultFileSize) is not configured. Please contact your administrator for more details", Locale.getDefault()), ex)
-            }
-            else
+                throw new BdmsException(messageSource.getMessage("file.upload.UndefinedFileSize.message", [] as Object[], Locale.getDefault()), ex)
+            } else
                 log.error("Unhandled runtime error occurred please check", ex)
         }
-        log.info("Created file successfully. Response details :" + infoMap)
         return infoMap
     }
 }
