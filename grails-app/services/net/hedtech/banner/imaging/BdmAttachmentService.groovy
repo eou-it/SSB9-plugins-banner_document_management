@@ -6,13 +6,16 @@ package net.hedtech.banner.imaging
 import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
+import net.hedtech.banner.imaging.BDMFileEncrypt
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.*
 import net.hedtech.bdm.services.BDMManager
 import org.json.JSONObject
-import net.hedtech.banner.imaging.BDMFileEncrypt
-
+import org.springframework.web.multipart.MultipartFile
 import javax.xml.ws.WebServiceException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /* Import BDM Exception*/
 
@@ -22,21 +25,19 @@ class BdmAttachmentService extends ServiceBase {
     static transactional = true
     def messageSource
 
-
     /**
      * Place the uploaded file in a temporary location
      * @param file
      * */
+
     def Map createBDMLocation(file) {
+
         def map = [:]
         File fileDest
         String fileName
         def bdmFileEncrypt = new BDMFileEncrypt()
 
         String tempPath = Holders?.config.bdmserver.file.location
-
-        log.info("TempPath File Location is :" + tempPath)
-
         fileName = file.getOriginalFilename()
         String hashedName = java.util.UUID.randomUUID().toString()
         checkExtension(fileName, file);
@@ -51,15 +52,20 @@ class BdmAttachmentService extends ServiceBase {
 
         fileDest = new File(userDir, fileName)
 
-        file.transferTo(fileDest)
+        byte[] bytes = file.getBytes();
+        Path path = Paths.get(fileDest.toString());
+        Files.write(path, bytes);
+
+        log.info("File Transferred Successfully")
 
         def absoluteFileName = fileDest.getAbsolutePath()
+        log.info("absoluteFileName = " + absoluteFileName)
         map.absoluteFileName = absoluteFileName
         map.userDir = userDir
         map.fileName = fileName
         map.hashedName = hashedName
 
-        def encrptedValue =  bdmFileEncrypt.encrypt(hashedName + '/' + fileName)
+        def encrptedValue = bdmFileEncrypt.encrypt(hashedName + '/' + fileName)
         map.encryptedFilePath = encrptedValue
 
         log.info("BDM temp file details are :" + map)
