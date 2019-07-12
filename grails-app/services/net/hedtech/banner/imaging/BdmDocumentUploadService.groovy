@@ -7,6 +7,7 @@ import grails.util.Holders
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.bdm.exception.BdmsException
+
 import java.lang.reflect.UndeclaredThrowableException
 
 class BdmDocumentUploadService {
@@ -47,20 +48,7 @@ class BdmDocumentUploadService {
         }// end of defect CR-000149402
 
         catch (RuntimeException ex) {
-            if (ex.getMessage().equals("File extension")) {
-                log.error("File extension is not allowed as per default configuration files extensions", ex)
-                String arr = Holders?.config.bdmserver.restrictedFile_ext
-                String Extension = arr.replace('[', ' ')
-                Extension = Extension.replace(']', ' ')
-                throw new BdmsException(messageSource.getMessage("file.upload.failureExtension.message", [] as Object[], Locale.getDefault()), ex)
-            } else if (ex.getMessage().equals("File size exceeding")) {
-                log.error("File size exceeding from the default value mentioned in configuration files", ex)
-                throw new BdmsException(messageSource.getMessage("file.upload.failureFileSize.message", [] as Object[], Locale.getDefault()), ex)
-            } else if (ex.getMessage().equals("Upload Size Undefined")) {
-                log.error("Please configure Maximum FILE Size for upload", ex)
-                throw new BdmsException(messageSource.getMessage("file.upload.UndefinedFileSize.message", [] as Object[], Locale.getDefault()), ex)
-            } else
-                log.error("Unhandled runtime error occurred please check", ex)
+            log.error("Unhandled runtime error occurred please check", ex)
         }
         return infoMap
     }

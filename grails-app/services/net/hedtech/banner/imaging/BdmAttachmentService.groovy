@@ -11,7 +11,7 @@ import net.hedtech.banner.service.ServiceBase
 import net.hedtech.bdm.exception.*
 import net.hedtech.bdm.services.BDMManager
 import org.json.JSONObject
-import org.springframework.web.multipart.MultipartFile
+
 import javax.xml.ws.WebServiceException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -76,15 +76,13 @@ class BdmAttachmentService extends ServiceBase {
     def checkExtension(String fileName, file) {
 
         String[] arr = Holders?.config.bdmserver.restrictedFile_ext
-
         def index = fileName.lastIndexOf('.')
 
         if (index > 0) {
             String extension = fileName.substring(index);
-
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i].equals(extension)) {
-                    throw new RuntimeException("File extension");
+                    throwUploadException("File extension")
                 }
             }
         }
@@ -94,9 +92,9 @@ class BdmAttachmentService extends ServiceBase {
         def size = Holders?.config.bdmserver.defaultFileSize
 
         if (!size) {
-            throw new RuntimeException("Upload Size Undefined");
+            throwUploadException("Upload Size Undefined");
         } else if (fileSize > size) {
-            throw new RuntimeException("File size exceeding");
+            throwUploadException("File size exceeding");
         }
 
     }//end of checkExtension
@@ -258,5 +256,22 @@ class BdmAttachmentService extends ServiceBase {
             throw new ApplicationException(BdmAttachmentService, BdmUtility.getGenericErrorMessage("BDM.Unknown.Exception", null), e)
         }
 
+    }
+
+    // Exception for Upload Services
+    private def throwUploadException(String msg) {
+        if (msg.equals("File extension")) {
+            log.error("File extension is not allowed as per default configuration files extensions")
+            String arr = Holders?.config.bdmserver.restrictedFile_ext
+            String extension = arr.replace('[', ' ')
+            extension = extension.replace(']', ' ')
+            throw new BdmsException(messageSource.getMessage("file.upload.failureExtension.message", [] as Object[], Locale.getDefault()))
+        } else if (msg.equals("File size exceeding")) {
+            log.error("File size exceeding from the default value mentioned in configuration file")
+            throw new BdmsException(messageSource.getMessage("file.upload.failureFileSize.message", [] as Object[], Locale.getDefault()))
+        } else if (msg.equals("Upload Size Undefined")) {
+            log.error("Please configure Maximum FILE Size for upload")
+            throw new BdmsException(messageSource.getMessage("file.upload.UndefinedFileSize.message", [] as Object[], Locale.getDefault()))
+        }
     }
 }
