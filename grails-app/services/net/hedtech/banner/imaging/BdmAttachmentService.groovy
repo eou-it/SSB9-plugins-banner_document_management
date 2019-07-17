@@ -45,9 +45,8 @@ class BdmAttachmentService extends ServiceBase {
 
         boolean b = userDir.mkdir()
 
-        if (!userDir?.exists()) {
-            throw new ApplicationException(BdmAttachmentService,
-                    new BusinessLogicValidationException("invalid.path.exception", []))
+        if (!b) {
+            throwUploadException("File Temp Location")
         }
 
         fileDest = new File(userDir, fileName)
@@ -272,6 +271,17 @@ class BdmAttachmentService extends ServiceBase {
         } else if (msg.equals("Upload Size Undefined")) {
             log.error("Please configure Maximum FILE Size for upload")
             throw new BdmsException(messageSource.getMessage("file.upload.UndefinedFileSize.message", [] as Object[], Locale.getDefault()))
+        } else if (msg.equals("File Temp Location")) {
+            File F = new File(Holders.config.bdmserver.file.location)
+            if (F.exists() == true) {
+                def usableSpace = F.getFreeSpace()
+                log.debug("debug here = " + usableSpace)
+                if (usableSpace == 0)
+                    log.error("Error!! Temporary folder size exceeded")
+            } else {
+                log.error("Error!! Unable to find temporary folder location")
+            }
+            throw new BdmsException(messageSource.getMessage("file.upload.failure.message", [] as Object[], Locale.getDefault()))
         }
     }
 }
