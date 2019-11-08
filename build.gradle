@@ -61,7 +61,7 @@ dependencies {
 
     // Added for BannerXE -BDM jars as  physical path
     compile files("lib/axservices-1.2.jar")
-    compile files("lib/bdm-client-1.9.12.jar")
+    compile files("lib/bdm-client-1.9.13.jar")
     compile files("lib/ISNetworksProvider-1.0.jar")
     compile files("lib/WxCrypto5-1.0.jar")
     compile files("lib/wxcrypto-1.0.0.jar")
