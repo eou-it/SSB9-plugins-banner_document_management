@@ -35,6 +35,7 @@ class BdmFinanceService {
         atB.put("ENC", "ENCUMBRANCES")
         atB.put("DCR", "DIRECT CASH RECEIPT")
         atB.put("CHK", "CHECK")
+        atB.put("FAS", "FIXED ASSETS")
     }
 
     //  Constant for JSON and ArrayList
