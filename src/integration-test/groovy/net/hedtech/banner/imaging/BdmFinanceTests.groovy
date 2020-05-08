@@ -7,8 +7,6 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
-import groovy.time.TimeCategory
-import groovy.time.TimeDuration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.hibernate.SessionFactory
 import org.json.JSONArray
@@ -34,7 +32,7 @@ class BdmFinanceTests extends BaseIntegrationTestCase {
 
         JSONArray jaInput = getInput()
         def inputLength = jaInput.length()
-        JSONArray jaOuput = bfs.getFinanceDocument(jaInput)
+        JSONArray jaOuput = bfs.getFinanceDocument(jaInput, true)
         def outputLength = jaOuput.length()
 
         assertTrue(inputLength == outputLength)
@@ -51,7 +49,7 @@ class BdmFinanceTests extends BaseIntegrationTestCase {
         // Get the predicate for the SQL statement
         StringBuilder sb = new StringBuilder()
 
-        sb.append("select FIELD1,FIELD3 from ae_dt506 where rownum<=10") // where rownum<=350
+        sb.append("select FIELD1,FIELD3 from ae_dt506 where rownum<=10")
         // end
 
         def inputList = []
@@ -68,7 +66,7 @@ class BdmFinanceTests extends BaseIntegrationTestCase {
             }
 
             // Converting List TO JSON
-            def abc = bfs.listToJsonArray(inputList)
+            def abc = bfs.getFSSoutput(inputList, true)
 
             return abc
 

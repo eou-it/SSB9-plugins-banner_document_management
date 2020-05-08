@@ -13,7 +13,6 @@ import groovy.time.TimeDuration
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.BusinessLogicValidationException
 import net.hedtech.bdm.exception.BdmsException
-import org.apache.juli.logging.Log
 import org.hibernate.SessionFactory
 import org.json.JSONArray
 
@@ -41,24 +40,28 @@ class BdmFinanceService {
     //  Constant for JSON and ArrayList
     private static final int DOCUMENT_ID_INDEX = 0;
     private static final int DOCUMENT_TYPE_INDEX = 1;
+    private static final int RESULT_INDEX = 2;
     private static final String VALID = "T"
     private static final String INVALID = "F"
 
+    //Fetch Size constant
+    private static final int QUERY_FETCH_SIZE = 200
+
     // Tuple for JSON
-    class Documents {
+    class FSSDocument {
         String documentID
         String documentType
         String valid
 
-        Documents(ArrayList l) {
+        FSSDocument(ArrayList l) {
             documentID = l.get(DOCUMENT_ID_INDEX)
             documentType = l.get(DOCUMENT_TYPE_INDEX)
-            valid = INVALID
+            valid = l.get(RESULT_INDEX)
         }
 
     }
 
-    public JSONArray getFinanceDocument(JSONArray jsonInput) {
+    public def getFinanceDocument(JSONArray jsonInput, boolean isJSONOutput) {
 
         def timeStart = new Date()
 
@@ -102,7 +105,7 @@ class BdmFinanceService {
             def outputArray = []
 
             PreparedStatement ps = conn.prepareStatement(stt)
-            ps.setFetchSize(200)
+            ps.setFetchSize(QUERY_FETCH_SIZE)
 
             int psIndex = 1
             sqlinputArray.each {
@@ -134,7 +137,7 @@ class BdmFinanceService {
                 }
             }
 
-            def outputToFSS = listToJsonArray(inputArray)
+            def outputToFSS = getFSSoutput(inputArray, isJSONOutput)
 
             return outputToFSS
         } catch (SQLException sqle) {
@@ -151,7 +154,7 @@ class BdmFinanceService {
             TimeDuration duration = TimeCategory.minus(timeStop, timeStart)
             TimeDuration sqlTime = TimeCategory.minus(sqlEndTime, sqlStartTime)
             log.info("getFinance Document : SQL execution time is " + sqlTime)
-            log.info("Total time is " + duration)
+            log.info("Total functional call time is " + duration)
         }
 
     }
@@ -160,6 +163,7 @@ class BdmFinanceService {
      Convert Document Type abbreviations to DOCUMENT TYPE
      Example : INV to INVOICE
      */
+
     def ArrayList convertATB(ArrayList input) {
 
         ArrayList output = []
@@ -174,7 +178,8 @@ class BdmFinanceService {
 
     /*
    * Function to Convert JSONArray to Arraylist
-   * */
+   */
+
     def JsonArraytoList(JSONArray ja) {
 
         def arr = []
@@ -192,26 +197,30 @@ class BdmFinanceService {
     }
 
     /*
-    * Function to Convert Arraylist (Nested) to JSONArray
-    * */
-    JSONArray listToJsonArray(ArrayList resultSample) {
+    * Function to Convert Arraylist(Nested) to JSONArray/POJO ArrayList
+    */
 
-        def DocumentsArray = []
+    def getFSSoutput(ArrayList resultSample, boolean isJSONOutput) {
+
+        def documentsArray = []
         try {
-
             resultSample.each {
                 it ->
-                    def a1 = new Documents(it)
-                    DocumentsArray.add(a1)
-
+                    def a1 = new FSSDocument(it)
+                    documentsArray.add(a1)
             }
-            def jsonOuput = JsonOutput.toJson(DocumentsArray)
-            JSONArray ja = new JSONArray(jsonOuput)
 
-            return ja
+            if (isJSONOutput) {
+                def jsonOuput = JsonOutput.toJson(documentsArray)
+                JSONArray ja = new JSONArray(jsonOuput)
+
+                return ja
+            }
+
+            return documentsArray
 
         } catch (Exception e) {
-            log.error("Error occurred while converting ArrayList to JSON, e.message=" + e.message + " and  e=" + e)
+            log.error("Error occurred while converting ArrayList to JSON/ArrayList, e.message=" + e.message + " and  e=" + e)
             throw e
         }
     }
