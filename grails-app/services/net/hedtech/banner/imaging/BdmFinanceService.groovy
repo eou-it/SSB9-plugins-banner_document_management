@@ -63,6 +63,14 @@ class BdmFinanceService {
 
     public def getFinanceDocument(JSONArray jsonInput, boolean isJSONOutput) {
 
+        // Check for Empty/NUll jsonInput and return an empty object
+        if (jsonInput == null || jsonInput.length() == 0) {
+            log.info("Finance Input JSONArray is empty,returning Empty Output")
+            def emptyArray = []
+
+            return getFSSoutput(emptyArray, isJSONOutput)
+        }
+
         def timeStart = new Date()
 
         log.info("Getting Finance Document ResultSet")
@@ -98,11 +106,11 @@ class BdmFinanceService {
 
         def sqlStartTime = new Date()
         def sqlEndTime = new Date()
+        def outputArray = []
 
         try {
             def stmt = "select FIELD1,FIELD3 from ae_dt506 where (field1,field3) in ( " + sb.toString()
             def stt = stmt.toString()
-            def outputArray = []
 
             PreparedStatement ps = conn.prepareStatement(stt)
             ps.setFetchSize(QUERY_FETCH_SIZE)
@@ -139,22 +147,20 @@ class BdmFinanceService {
 
             def outputToFSS = getFSSoutput(inputArray, isJSONOutput)
 
-            return outputToFSS
-        } catch (SQLException sqle) {
-            log.error("SQL error while performing getFinanceDocument : " + sqle.getMessage())
-
-            throw sqle
-        } catch (Exception e) {
-            log.error("Exception occurred while performing getFinanceDocument : ", e)
-            println("e.message=" + e.message + " and  e=" + e)
-            throw new ApplicationException(BdmsException, new BusinessLogicValidationException("Invalid.FSS.message", []))
-
-        } finally {
             def timeStop = new Date()
             TimeDuration duration = TimeCategory.minus(timeStop, timeStart)
             TimeDuration sqlTime = TimeCategory.minus(sqlEndTime, sqlStartTime)
             log.info("getFinance Document : SQL execution time is " + sqlTime)
             log.info("Total functional call time is " + duration)
+
+            return outputToFSS
+        } catch (SQLException sqle) {
+            log.error("SQL error while performing getFinanceDocument : " + sqle.getMessage())
+            throw sqle
+        } catch (Exception e) {
+            log.error("Exception occurred while performing getFinanceDocument : ", e)
+            println("e.message=" + e.message + " and  e=" + e)
+            throw new ApplicationException(BdmsException, new BusinessLogicValidationException("Invalid.FSS.message", []))
         }
 
     }
