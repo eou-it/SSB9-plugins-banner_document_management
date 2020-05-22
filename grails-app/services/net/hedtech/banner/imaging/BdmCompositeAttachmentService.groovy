@@ -166,7 +166,7 @@ class BdmCompositeAttachmentService {
                 org.json.JSONArray indexValues = indexes.get(SUPPORTED_OPERATOR)
                 def indexLength = indexValues.length()
                 (0..(indexLength - 1)).each { length ->
-                    criterias << new org.json.JSONObject(indexValues.opt(length))
+                    criterias << indexValues.getJSONObject(length)
                 }
             } else {
                 criterias << new org.json.JSONObject(indexes)
