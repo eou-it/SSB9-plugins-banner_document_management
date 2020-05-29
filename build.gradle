@@ -5,11 +5,11 @@ buildscript {
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
     }
 }
 
-version "9.2"
+version "9.2.0.2"
 group "banner.document.management"
 
 apply plugin: "eclipse"
@@ -70,8 +70,8 @@ dependencies {
     //Added for BannerXE
     compile "org.grails.plugins:hibernate5"
 
-    compile "org.hibernate:hibernate-core:5.1.5.Final"
-    compile "org.hibernate:hibernate-ehcache:5.1.5.Final"
+    compile "org.hibernate:hibernate-core:5.1.17.Final"
+    compile "org.hibernate:hibernate-ehcache:5.1.17.Final"
 }
 
 bootRun {
